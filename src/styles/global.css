@@ -17,7 +17,10 @@
 /* ============================================================
    Variaveis de design
    ============================================================ */
-:root {
+
+/* Tema CLARO (fallback e [data-theme="light"]) */
+:root,
+[data-theme="light"] {
   /* PALETA */
   --color-bg:             #FAFAF8;
   --color-surface:        #FFFFFF;
@@ -34,7 +37,42 @@
   --color-accent-line:    #2D9962;
   --color-code-bg:        #F0F0EC;
   --color-code-text:      #2E6B45;
+  --color-pre-bg:         #1A1A18;
+  --color-pre-text:       #E8E8E4;
+  --color-toggle-bg:      transparent;
+  --color-toggle-border:  #E8E8E4;
+  --color-toggle-icon:    #8A8A84;
+  --color-shadow-base:    26, 26, 24;
 
+}
+
+/* Tema ESCURO */
+[data-theme="dark"] {
+  /* PALETA DARK - grafite neutramente esverdeado, sem verde berrante */
+  --color-bg:             #0E110F;
+  --color-surface:        #141814;
+  --color-surface-alt:    #1A1F1B;
+  --color-text-primary:   #F0F0EE;
+  --color-text-body:      #C8C8C4;
+  --color-text-muted:     #7A7A76;
+  --color-text-faint:     #3E3E3A;
+  --color-border:         #242824;
+  --color-border-subtle:  #1C201C;
+  --color-accent:         #3FD17E;
+  --color-accent-hover:   #5ADF94;
+  --color-accent-subtle:  #0F2518;
+  --color-accent-line:    #3FD17E;
+  --color-code-bg:        #1A1F1B;
+  --color-code-text:      #5FD99A;
+  --color-pre-bg:         #111411;
+  --color-pre-text:       #D4D4D0;
+  --color-toggle-bg:      transparent;
+  --color-toggle-border:  #242824;
+  --color-toggle-icon:    #7A7A76;
+  --color-shadow-base:    0, 0, 0;
+}
+
+:root {
   /* TIPOGRAFIA */
   --font-sans:   'Geist Variable', 'Geist', 'Inter', system-ui, sans-serif;
   --font-serif:  'Lora', Georgia, serif;
@@ -88,8 +126,8 @@
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
-  --shadow-sm: 0 1px 2px rgba(26, 26, 24, 0.06);
-  --shadow-md: 0 4px 12px rgba(26, 26, 24, 0.08);
+  --shadow-sm: 0 1px 2px rgba(var(--color-shadow-base), 0.06);
+  --shadow-md: 0 4px 12px rgba(var(--color-shadow-base), 0.08);
 
   /* ANIMACAO */
   --duration-fast:   120ms;
@@ -783,8 +821,8 @@ a {
 }
 
 .prose pre {
-  background: var(--color-text-primary);
-  color: #E8E8E4;
+  background: var(--color-pre-bg);
+  color: var(--color-pre-text);
   padding: var(--space-6);
   border-radius: var(--radius-lg);
   overflow-x: auto;
@@ -949,6 +987,65 @@ a {
 
 .site-footer__links a:hover {
   color: var(--color-accent);
+}
+
+/* ============================================================
+   Toggle de tema (sol / lua)
+   ============================================================ */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-toggle-border);
+  background: var(--color-toggle-bg);
+  color: var(--color-toggle-icon);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    background var(--duration-fast) ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.theme-toggle:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Icone lua visivel no dark, sol no light */
+.theme-toggle__sun,
+.theme-toggle__moon {
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .theme-toggle__sun  { display: block; }
+[data-theme="dark"] .theme-toggle__moon { display: none;  }
+[data-theme="light"] .theme-toggle__sun  { display: none;  }
+[data-theme="light"] .theme-toggle__moon { display: block; }
+
+/* Transicao suave entre temas no body */
+body,
+.site-header,
+.badge,
+.prose pre,
+.prose code {
+  transition:
+    background-color var(--duration-normal) ease,
+    color var(--duration-normal) ease,
+    border-color var(--duration-normal) ease;
 }
 
 /* ============================================================

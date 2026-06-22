@@ -24,6 +24,16 @@ const ogImageURL = ogImage
   : new URL('/og/mcp-fiscal-brasil.png', Astro.site).toString();
 ---
 
+<!-- Anti-FOUC: aplica tema ANTES do render. Dark e o padrao se nao houver preferencia salva. -->
+<script is:inline>
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    var theme = saved === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{fullTitle}</title>
