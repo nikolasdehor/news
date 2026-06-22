@@ -1,7 +1,7 @@
 ---
 title: "Edição 1: de zero a 44 tools - o que o MCP Fiscal Brasil entregou nos primeiros três meses"
 description: "Do protótipo de uma linha ao servidor MCP fiscal mais completo do Brasil - um relato honesto de tudo que foi construído, corrigido e aprendido entre março e junho de 2026."
-pubDate: 2026-06-22
+pubDate: 2026-06-22T12:00:00-03:00
 project: "mcp-fiscal-brasil"
 tags: ["mcp", "python", "fiscal", "brasil", "nfe", "sped", "cnpj", "open-source", "reforma-tributaria", "tributario", "devtools", "ia", "automacao"]
 ogImage: "/og/mcp-fiscal-brasil.png"
