@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Apenas POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ ok: false, error: 'Metodo nao permitido.' });
+    return res.status(405).json({ ok: false, error: 'Método não permitido.' });
   }
 
   // CORS: permitir apenas same-origin (Vercel envia credenciais de origem automaticamente)
@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       'https://news.dehor.com.br',
       'https://dehor-news.vercel.app',
     ];
-    if (!allowedOrigins.some((o) => origin === o || origin?.endsWith('.vercel.app'))) {
+    if (!allowedOrigins.some((o) => origin === o)) {
       return res.status(403).json({ ok: false, error: 'Origem nao permitida.' });
     }
   }
@@ -44,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Validar email
   if (!isValidEmail(email)) {
-    return res.status(422).json({ ok: false, error: 'E-mail invalido.' });
+    return res.status(422).json({ ok: false, error: 'E-mail inválido.' });
   }
 
   // Validar projects
@@ -56,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .filter((p): p is string => typeof p === 'string' && VALID_SLUGS.has(p));
 
   if (validProjects.length === 0) {
-    return res.status(422).json({ ok: false, error: 'Nenhum projeto valido selecionado.' });
+    return res.status(422).json({ ok: false, error: 'Nenhum projeto válido selecionado.' });
   }
 
   const apiKey = process.env.RESEND_API_KEY;
@@ -107,7 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (errors.length > 0) {
-    return res.status(500).json({ ok: false, error: 'Erro ao salvar inscricao. Tente novamente.' });
+    return res.status(500).json({ ok: false, error: 'Erro ao salvar inscrição. Tente novamente.' });
   }
 
   return res.status(200).json({ ok: true });
