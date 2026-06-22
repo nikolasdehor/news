@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Head from '../components/Head.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import SubscribeForm from '../components/SubscribeForm.astro';
 import '../styles/global.css';
 
 const todos = await getCollection('posts', ({ data }) => !data.draft);
@@ -23,6 +24,11 @@ const recentes = [...todos]
   .slice(0, 10);
 
 const siteDescription = 'Novidades e diário de bordo dos projetos open source de Nikolas de Hor - Goiânia, Brasil.';
+
+// Projetos disponíveis para inscricao
+const projetosSubscribe = [
+  { slug: 'mcp-fiscal-brasil', label: 'MCP Fiscal Brasil' },
+];
 
 // Metadados de projetos
 const metaProjetos: Record<string, { nome: string; desc: string; github: string }> = {
@@ -123,6 +129,12 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
         </div>
       </section>
     </main>
+
+    <!-- Inscricao na newsletter -->
+    <SubscribeForm
+      projects={projetosSubscribe}
+      heading="Receba as novidades"
+    />
 
     <Footer />
   </body>

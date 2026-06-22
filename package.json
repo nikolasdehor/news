@@ -18,5 +18,8 @@
     "@fontsource/geist-mono": "^5.2.8",
     "@fontsource/lora": "^5.2.8",
     "astro": "^6.4.7"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.8.17"
   }
 }
