@@ -1,0 +1,101 @@
+name: Sincronizar releases e gerar rascunhos
+
+on:
+  schedule:
+    # Roda a cada 6 horas (00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Simular sem criar arquivos nem abrir PR'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Verificar releases e gerar rascunhos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Executar sync-releases.mjs
+        id: sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        # Exit 0  = nada novo (nao abre PR)
+        # Exit 2  = rascunhos gerados (abre PR)
+        # Exit 1  = erro fatal (falha o job)
+        run: |
+          set +e
+          output=$(node scripts/sync-releases.mjs 2>&1)
+          exit_code=$?
+          echo "$output"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          if [ $exit_code -eq 2 ]; then
+            # Extrai o summary da linha GENERATED_SUMMARY= e grava com delimitador
+            # para evitar quebras se tags contiverem caracteres especiais.
+            summary=$(echo "$output" | grep '^GENERATED_SUMMARY=' | head -1 | cut -d= -f2- | tr -cd '[:alnum:] .,/-')
+            {
+              echo "summary<<EOF_SUMMARY"
+              echo "$summary"
+              echo "EOF_SUMMARY"
+            } >> "$GITHUB_OUTPUT"
+            echo "has_new=true" >> "$GITHUB_OUTPUT"
+          elif [ $exit_code -eq 0 ]; then
+            echo "has_new=false" >> "$GITHUB_OUTPUT"
+          else
+            exit $exit_code
+          fi
+
+      - name: Abrir PR com rascunhos
+        if: steps.sync.outputs.has_new == 'true' && github.event.inputs.dry_run != 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: auto/rascunho-releases-${{ github.run_id }}
+          base: main
+          commit-message: |
+            feat: rascunhos de post para ${{ steps.sync.outputs.summary }}
+
+            Gerado automaticamente pelo workflow sync-releases.
+          title: 'Rascunho: ${{ steps.sync.outputs.summary }}'
+          body: |
+            ## Rascunhos gerados automaticamente
+
+            Este PR foi aberto pelo workflow `sync-releases` apos detectar releases
+            novos nos projetos monitorados.
+
+            **Releases cobertos:** `${{ steps.sync.outputs.summary }}`
+
+            ### Fluxo de revisao
+
+            1. Revise cada arquivo `.md` em `src/content/posts/`
+            2. Ajuste titulo, descricao, tags e tom conforme necessario
+            3. Altere `draft: true` para `draft: false` quando o post estiver pronto
+            4. Aprove e faça merge - o deploy para producao e automatico
+
+            ### Anti-flood
+
+            O arquivo `.github/synced-releases.json` foi atualizado neste commit com as
+            novas tags. Rodar o workflow novamente nao vai gerar duplicatas.
+          labels: rascunho-auto
+          add-paths: |
+            src/content/posts/**
+            .github/synced-releases.json
