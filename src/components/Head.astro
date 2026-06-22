@@ -1,0 +1,62 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonicalURL?: URL | string;
+  ogImage?: string;
+  pubDate?: Date;
+  project?: string;
+}
+
+const {
+  title,
+  description,
+  canonicalURL = Astro.url,
+  ogImage,
+  pubDate,
+  project,
+} = Astro.props;
+
+const siteName = 'news.dehor.com.br';
+const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
+const ogImageURL = ogImage
+  ? new URL(ogImage, Astro.site).toString()
+  : new URL('/og/mcp-fiscal-brasil.png', Astro.site).toString();
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="author" content="Nikolas de Hor" />
+<link rel="canonical" href={canonicalURL} />
+<link rel="sitemap" href="/sitemap-index.xml" />
+
+<!-- OpenGraph -->
+<meta property="og:site_name" content={siteName} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:image" content={ogImageURL} />
+<meta property="og:locale" content="pt_BR" />
+{pubDate && (
+  <meta property="article:published_time" content={pubDate.toISOString()} />
+  <meta property="og:type" content="article" />
+)}
+{!pubDate && <meta property="og:type" content="website" />}
+
+<!-- Twitter/X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageURL} />
+
+<!-- RSS feeds -->
+<link rel="alternate" type="application/rss+xml"
+      title={`RSS Global - ${siteName}`}
+      href="/rss.xml" />
+{project && (
+  <link rel="alternate" type="application/rss+xml"
+        title={`RSS - ${project}`}
+        href={`/${project}/rss.xml`} />
+)}

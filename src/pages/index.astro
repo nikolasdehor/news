@@ -1,0 +1,157 @@
+---
+import { getCollection } from 'astro:content';
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+const todos = await getCollection('posts', ({ data }) => !data.draft);
+
+// Agrupa por projeto
+const porProjeto = todos.reduce((acc: Record<string, typeof todos>, post) => {
+  const proj = post.data.project;
+  if (!acc[proj]) acc[proj] = [];
+  acc[proj].push(post);
+  return acc;
+}, {});
+
+const projetos = Object.keys(porProjeto).sort();
+
+// Posts recentes (todos, ordenados por data, max 10)
+const recentes = [...todos]
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 10);
+
+const siteDescription = 'Novidades e diário de bordo dos projetos open source de Nikolas de Hor - Goiânia, Brasil.';
+
+// Mapa de metadados de projetos
+const metaProjetos: Record<string, { nome: string; desc: string; logo: string; github: string }> = {
+  'mcp-fiscal-brasil': {
+    nome: 'MCP Fiscal Brasil',
+    desc: 'Servidor MCP com 44 tools para dados fiscais brasileiros - CNPJ, NF-e, SPED, BCB e Reforma Tributária. Sem API key obrigatória.',
+    logo: '/logo-mcp-fiscal.png',
+    github: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
+  },
+};
+---
+
+<html lang="pt-BR">
+  <head>
+    <Head
+      title="news.dehor.com.br"
+      description={siteDescription}
+      canonicalURL={new URL('/', Astro.site)}
+    />
+    <link rel="icon" type="image/png" href="/logo-mcp-fiscal.png" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__inner">
+        <p class="eyebrow eyebrow--on-dark">Open Source &middot; Goiânia, Brasil</p>
+        <h1 class="hero__title" id="hero-title">
+          Novidades em ferramentas open source para devs brasileiros.
+        </h1>
+        <p class="hero__subtitle">
+          Servidor MCP, dados fiscais, NF-e, código aberto.
+        </p>
+        <hr class="hero__divider" aria-hidden="true" />
+        <div class="hero__cta">
+          <span class="badge-new">Novo</span>
+          <span style="color: var(--text-on-dark-muted); font-size: var(--text-small);">MCP Fiscal Brasil</span>
+          <a href="/mcp-fiscal-brasil/" class="hero__link">Ver projeto &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <!-- Projetos -->
+      <section class="section" aria-labelledby="projetos-titulo">
+        <div class="container">
+          <div class="section__header">
+            <p class="eyebrow">Projetos</p>
+            <h2 class="section__title" id="projetos-titulo">Projetos cobertos</h2>
+          </div>
+          <div class="projects-grid">
+            {projetos.map((proj) => {
+              const meta = metaProjetos[proj];
+              const count = porProjeto[proj].length;
+              return (
+                <a href={`/${proj}/`} style="text-decoration: none;">
+                  <article class="project-card">
+                    {meta?.logo && (
+                      <img
+                        src={meta.logo}
+                        alt={`Logo ${meta?.nome ?? proj}`}
+                        class="project-card__icon"
+                        width="48"
+                        height="48"
+                        loading="eager"
+                      />
+                    )}
+                    <h3 class="project-card__name">{meta?.nome ?? proj}</h3>
+                    {meta?.desc && (
+                      <p class="project-card__desc">{meta.desc}</p>
+                    )}
+                    <p class="project-card__footer">
+                      {count} {count === 1 ? 'edição' : 'edições'} publicadas
+                    </p>
+                  </article>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <!-- Posts recentes -->
+      <section class="section" aria-labelledby="recentes-titulo" style="padding-top: 0;">
+        <div class="container">
+          <div class="section__header">
+            <p class="eyebrow">Blog</p>
+            <h2 class="section__title" id="recentes-titulo">Últimas edições</h2>
+          </div>
+          <div class="posts-list">
+            {recentes.map((post) => {
+              const [project, ...restParts] = post.id.split('/');
+              const slug = restParts.join('/');
+              const metaProj = metaProjetos[project];
+              return (
+                <article class="post-item">
+                  <div class="post-item__inner">
+                    <div class="post-item__body">
+                      <a href={`/${project}/`} class="post-item__project-tag">
+                        {metaProj?.nome ?? project}
+                      </a>
+                      <h3 class="post-item__title">
+                        <a href={`/${project}/${slug}/`} class="post-link">
+                          {post.data.title}
+                        </a>
+                      </h3>
+                      <p class="post-item__excerpt">{post.data.description}</p>
+                    </div>
+                    <time
+                      class="post-item__meta"
+                      datetime={post.data.pubDate.toISOString()}
+                    >
+                      {post.data.pubDate.toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </time>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>

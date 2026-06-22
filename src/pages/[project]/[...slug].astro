@@ -1,0 +1,107 @@
+---
+import { getCollection, render } from 'astro:content';
+import Head from '../../components/Head.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  const todos = await getCollection('posts', ({ data }) => !data.draft);
+
+  return todos.map((post) => {
+    const [project, ...restParts] = post.id.split('/');
+    const slug = restParts.join('/');
+
+    return {
+      params: { project, slug },
+      props: { post },
+    };
+  });
+}
+
+const { post } = Astro.props;
+const { project, slug } = Astro.params;
+const { Content } = await render(post);
+
+const canonicalURL = new URL(`/${project}/${slug}/`, Astro.site);
+
+// Nomes de display por projeto
+const nomesProjeto: Record<string, string> = {
+  'mcp-fiscal-brasil': 'MCP Fiscal Brasil',
+};
+const nomeProjeto = nomesProjeto[project] ?? project;
+---
+
+<html lang="pt-BR">
+  <head>
+    <Head
+      title={post.data.title}
+      description={post.data.description}
+      canonicalURL={canonicalURL}
+      ogImage={post.data.ogImage}
+      pubDate={post.data.pubDate}
+      project={project}
+    />
+    <link rel="icon" type="image/png" href="/logo-mcp-fiscal.png" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <main>
+      <!-- Header do post -->
+      <header class="post-header">
+        <div class="post-header__inner">
+          <a href={`/${project}/`} class="breadcrumb">
+            &larr; {nomeProjeto}
+          </a>
+
+          <span class="post-project-tag">{nomeProjeto}</span>
+
+          <h1 class="post-title">{post.data.title}</h1>
+
+          <p class="post-byline">
+            Nikolas de Hor &middot;
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </time>
+          </p>
+
+          <div class="post-ornament" aria-hidden="true"></div>
+        </div>
+      </header>
+
+      <!-- Corpo do artigo -->
+      <article class="prose">
+        <Content />
+      </article>
+
+      <!-- Rodapé do post -->
+      <div class="post-footer">
+        <nav class="post-footer__nav" aria-label="Navegação entre posts">
+          <a href={`/${project}/`} class="back-link" style="color: var(--text-link);">
+            &larr; Voltar para {nomeProjeto}
+          </a>
+        </nav>
+        <div class="post-footer__note">
+          <p>
+            Gostou desta edição? Acompanhe o projeto no GitHub:
+            <a
+              href="https://github.com/nikolasdehor"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              github.com/nikolasdehor
+            </a>
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+  </body>
+</html>
