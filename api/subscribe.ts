@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       'https://dehor-news.vercel.app',
     ];
     if (!allowedOrigins.some((o) => origin === o)) {
-      return res.status(403).json({ ok: false, error: 'Origem nao permitida.' });
+      return res.status(403).json({ ok: false, error: 'Origem não permitida.' });
     }
   }
 
@@ -86,15 +86,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
+        const data: Record<string, unknown> = await response.json().catch(() => ({}));
         // Contato ja existente (409 ou mensagem especifica) -> tratar como sucesso
+        const msg = typeof data.message === 'string' ? data.message : '';
         const isAlreadyExists =
           response.status === 409 ||
-          (typeof (data as Record<string, unknown>).message === 'string' &&
-            (data as Record<string, unknown>).message
-              .toString()
-              .toLowerCase()
-              .includes('already'));
+          msg.toLowerCase().includes('already');
 
         if (!isAlreadyExists) {
           errors.push(slug);
