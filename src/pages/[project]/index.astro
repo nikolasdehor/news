@@ -26,31 +26,25 @@ const { posts } = Astro.props;
 const metaProjetos: Record<string, {
   nome: string;
   desc: string;
-  logo: string;
   github: string;
   tags: string[];
 }> = {
   'mcp-fiscal-brasil': {
     nome: 'MCP Fiscal Brasil',
-    desc: 'Servidor MCP com 44 tools para dados fiscais brasileiros - CNPJ, NF-e, SPED, BCB e Reforma Tributária.',
-    logo: '/logo-mcp-fiscal.png',
+    desc: 'Servidor MCP em Python para consulta de dados fiscais e tributários brasileiros.',
     github: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
-    tags: ['Python', 'MCP', 'Dados Fiscais', 'NF-e', 'Open Source'],
+    tags: ['Python', 'MCP', 'Open Source'],
   },
 };
 
 const meta = metaProjetos[project] ?? {
   nome: project,
   desc: `Diário de bordo do projeto ${project}.`,
-  logo: '',
   github: '',
   tags: [],
 };
 
-const primeiraData = posts[posts.length - 1]?.data.pubDate;
-const desde = primeiraData
-  ? primeiraData.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' })
-  : '';
+const totalEdicoes = posts.length;
 ---
 
 <html lang="pt-BR">
@@ -67,93 +61,76 @@ const desde = primeiraData
   <body>
     <Nav />
 
-    <!-- Cabeçalho do projeto -->
-    <header class="project-header" aria-labelledby="project-title">
-      <div class="project-header__inner">
-        <a href="/" class="back-link">&larr; Todos os projetos</a>
+    <!-- Cabecalho do projeto -->
+    <section class="project-hero" aria-labelledby="project-title">
+      <div class="project-hero__inner">
+        <a href="/" class="back-link">&larr; Projetos</a>
 
-        <div class="project-header__meta">
-          {meta.logo && (
-            <img
-              src={meta.logo}
-              alt={`Logo ${meta.nome}`}
-              class="project-header__logo"
-              width="72"
-              height="72"
-              loading="eager"
-            />
-          )}
-          <div class="project-header__info">
-            <h1 class="project-header__title" id="project-title">{meta.nome}</h1>
-            {meta.tags.length > 0 && (
-              <div class="project-header__tags">
-                {meta.tags.map((tag) => (
-                  <span class="tech-tag">{tag}</span>
-                ))}
-              </div>
-            )}
-            {meta.github && (
-              <div class="project-header__actions">
-                <a
-                  href={meta.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn-outline"
-                >
-                  GitHub &nearr;
-                </a>
-                <a
-                  href={`/${project}/rss.xml`}
-                  class="btn-outline"
-                  aria-label={`Feed RSS do projeto ${meta.nome}`}
-                >
-                  RSS &nearr;
-                </a>
-              </div>
-            )}
-            {desde && (
-              <p class="project-header__count">
-                {posts.length} {posts.length === 1 ? 'edição publicada' : 'edições publicadas'} desde {desde}
-              </p>
-            )}
+        <h1 class="project-hero__title" id="project-title">{meta.nome}</h1>
+        <p class="project-hero__desc">{meta.desc}</p>
+
+        {meta.tags.length > 0 && (
+          <div class="project-hero__badges">
+            {meta.tags.map((tag) => (
+              <span class="badge badge--accent">{tag}</span>
+            ))}
           </div>
+        )}
+
+        <div class="project-hero__links">
+          {meta.github && (
+            <a
+              href={meta.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link-external"
+              aria-label={`Repositorio GitHub de ${meta.nome} (abre em nova aba)`}
+            >
+              GitHub
+            </a>
+          )}
+          <a
+            href={`/${project}/rss.xml`}
+            class="link-external"
+            aria-label={`Feed RSS do projeto ${meta.nome}`}
+          >
+            RSS
+          </a>
         </div>
       </div>
-    </header>
+    </section>
 
     <main>
       <section class="section" aria-labelledby="edicoes-titulo">
         <div class="container">
-          <div class="section__header">
-            <p class="eyebrow">Arquivo</p>
-            <h2 class="section__title" id="edicoes-titulo">Todas as edições</h2>
-          </div>
+          <h2 class="section-label" id="edicoes-titulo">
+            {totalEdicoes} {totalEdicoes === 1 ? 'edição publicada' : 'edições publicadas'}
+          </h2>
           <div class="editions-list">
             {posts.map((post, idx) => {
               const [, ...restParts] = post.id.split('/');
               const slug = restParts.join('/');
-              const numEdition = String(posts.length - idx).padStart(3, '0');
+              const numEdition = String(totalEdicoes - idx).padStart(2, '0');
               return (
                 <article class="edition-row">
-                  <span class="edition-number" aria-hidden="true">#{numEdition}</span>
-                  <div class="edition-content">
-                    <h3 class="edition-content__title">
-                      <a href={`/${project}/${slug}/`} class="post-link">
-                        {post.data.title}
-                      </a>
-                    </h3>
-                    <p class="edition-content__excerpt">{post.data.description}</p>
-                    <div class="edition-content__meta">
-                      <time datetime={post.data.pubDate.toISOString()}>
-                        {post.data.pubDate.toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                          timeZone: 'America/Sao_Paulo',
-                        })}
-                      </time>
-                      <a href={`/${project}/${slug}/`}>Ler &rarr;</a>
-                    </div>
+                  <p class="edition-number">EDIÇÃO {numEdition}</p>
+                  <h3>
+                    <a href={`/${project}/${slug}/`} class="edition-row__title">
+                      {post.data.title}
+                    </a>
+                  </h3>
+                  <p class="edition-row__excerpt">{post.data.description}</p>
+                  <div class="edition-row__meta">
+                    <time datetime={post.data.pubDate.toISOString()}>
+                      {post.data.pubDate.toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric',
+                        timeZone: 'America/Sao_Paulo',
+                      })}
+                    </time>
+                    <span aria-hidden="true">&middot;</span>
+                    <a href={`/${project}/${slug}/`}>Ler &rarr;</a>
                   </div>
                 </article>
               );

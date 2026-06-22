@@ -24,12 +24,11 @@ const recentes = [...todos]
 
 const siteDescription = 'Novidades e diário de bordo dos projetos open source de Nikolas de Hor - Goiânia, Brasil.';
 
-// Mapa de metadados de projetos
-const metaProjetos: Record<string, { nome: string; desc: string; logo: string; github: string }> = {
+// Metadados de projetos
+const metaProjetos: Record<string, { nome: string; desc: string; github: string }> = {
   'mcp-fiscal-brasil': {
     nome: 'MCP Fiscal Brasil',
-    desc: 'Servidor MCP com 44 tools para dados fiscais brasileiros - CNPJ, NF-e, SPED, BCB e Reforma Tributária. Sem API key obrigatória.',
-    logo: '/logo-mcp-fiscal.png',
+    desc: 'Servidor MCP com 44 tools para dados fiscais brasileiros - CNPJ, NF-e, SPED, BCB e Reforma Tributaria. Sem API key obrigatoria.',
     github: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
   },
 };
@@ -51,19 +50,13 @@ const metaProjetos: Record<string, { nome: string; desc: string; logo: string; g
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero__inner">
-        <p class="eyebrow eyebrow--on-dark">Open Source &middot; Goiânia, Brasil</p>
+        <p class="hero__eyebrow">Open Source &middot; Goiânia, Brasil</p>
         <h1 class="hero__title" id="hero-title">
-          Novidades em ferramentas open source para devs brasileiros.
+          Novidades open source<br />de Nikolas de Hor
         </h1>
         <p class="hero__subtitle">
-          Servidor MCP, dados fiscais, NF-e, código aberto.
+          Projetos e descobertas de um dev de Goiânia - dados fiscais, automação e ferramentas para devs brasileiros.
         </p>
-        <hr class="hero__divider" aria-hidden="true" />
-        <div class="hero__cta">
-          <span class="badge-new">Novo</span>
-          <span style="color: var(--text-on-dark-muted); font-size: var(--text-small);">MCP Fiscal Brasil</span>
-          <a href="/mcp-fiscal-brasil/" class="hero__link">Ver projeto &rarr;</a>
-        </div>
       </div>
     </section>
 
@@ -71,35 +64,22 @@ const metaProjetos: Record<string, { nome: string; desc: string; logo: string; g
       <!-- Projetos -->
       <section class="section" aria-labelledby="projetos-titulo">
         <div class="container">
-          <div class="section__header">
-            <p class="eyebrow">Projetos</p>
-            <h2 class="section__title" id="projetos-titulo">Projetos cobertos</h2>
-          </div>
-          <div class="projects-grid">
+          <h2 class="section-label" id="projetos-titulo">Projetos</h2>
+          <div>
             {projetos.map((proj) => {
               const meta = metaProjetos[proj];
               const count = porProjeto[proj].length;
               return (
-                <a href={`/${proj}/`} style="text-decoration: none;">
-                  <article class="project-card">
-                    {meta?.logo && (
-                      <img
-                        src={meta.logo}
-                        alt={`Logo ${meta?.nome ?? proj}`}
-                        class="project-card__icon"
-                        width="48"
-                        height="48"
-                        loading="eager"
-                      />
-                    )}
-                    <h3 class="project-card__name">{meta?.nome ?? proj}</h3>
+                <a href={`/${proj}/`} class="project-item">
+                  <div class="project-item__body">
+                    <p class="project-item__name">{meta?.nome ?? proj}</p>
                     {meta?.desc && (
-                      <p class="project-card__desc">{meta.desc}</p>
+                      <p class="project-item__desc">{meta.desc}</p>
                     )}
-                    <p class="project-card__footer">
-                      {count} {count === 1 ? 'edição publicada' : 'edições publicadas'}
-                    </p>
-                  </article>
+                  </div>
+                  <span class="project-item__arrow" aria-hidden="true">
+                    {count} {count === 1 ? 'edição' : 'edições'} &rarr;
+                  </span>
                 </a>
               );
             })}
@@ -108,12 +88,9 @@ const metaProjetos: Record<string, { nome: string; desc: string; logo: string; g
       </section>
 
       <!-- Posts recentes -->
-      <section class="section" aria-labelledby="recentes-titulo" style="padding-top: 0;">
+      <section class="section" aria-labelledby="recentes-titulo">
         <div class="container">
-          <div class="section__header">
-            <p class="eyebrow">Blog</p>
-            <h2 class="section__title" id="recentes-titulo">Últimas edições</h2>
-          </div>
+          <h2 class="section-label" id="recentes-titulo">Publicações recentes</h2>
           <div class="posts-list">
             {recentes.map((post) => {
               const [project, ...restParts] = post.id.split('/');
@@ -121,22 +98,8 @@ const metaProjetos: Record<string, { nome: string; desc: string; logo: string; g
               const metaProj = metaProjetos[project];
               return (
                 <article class="post-item">
-                  <div class="post-item__inner">
-                    <div class="post-item__body">
-                      <a href={`/${project}/`} class="post-item__project-tag">
-                        {metaProj?.nome ?? project}
-                      </a>
-                      <h3 class="post-item__title">
-                        <a href={`/${project}/${slug}/`} class="post-link">
-                          {post.data.title}
-                        </a>
-                      </h3>
-                      <p class="post-item__excerpt">{post.data.description}</p>
-                    </div>
-                    <time
-                      class="post-item__meta"
-                      datetime={post.data.pubDate.toISOString()}
-                    >
+                  <div class="post-item__meta">
+                    <time datetime={post.data.pubDate.toISOString()}>
                       {post.data.pubDate.toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: 'short',
@@ -144,7 +107,15 @@ const metaProjetos: Record<string, { nome: string; desc: string; logo: string; g
                         timeZone: 'America/Sao_Paulo',
                       })}
                     </time>
+                    <span class="post-item__meta-dot" aria-hidden="true">&middot;</span>
+                    <a href={`/${project}/`}>{metaProj?.nome ?? project}</a>
                   </div>
+                  <h3>
+                    <a href={`/${project}/${slug}/`} class="post-item__title">
+                      {post.data.title}
+                    </a>
+                  </h3>
+                  <p class="post-item__excerpt">{post.data.description}</p>
                 </article>
               );
             })}

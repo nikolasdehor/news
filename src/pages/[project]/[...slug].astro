@@ -30,6 +30,15 @@ const nomesProjeto: Record<string, string> = {
   'mcp-fiscal-brasil': 'MCP Fiscal Brasil',
 };
 const nomeProjeto = nomesProjeto[project] ?? project;
+
+// Numero da edicao a partir do slug (ex: "edicao-1" -> "01")
+const matchNum = slug.match(/(\d+)$/);
+const numEdicao = matchNum ? String(parseInt(matchNum[1], 10)).padStart(2, '0') : null;
+
+// Estimativa de tempo de leitura
+const palavrasPorMinuto = 220;
+const textoEstimado = post.data.description.length * 8; // aproximacao
+const minutos = Math.max(1, Math.round(textoEstimado / palavrasPorMinuto));
 ---
 
 <html lang="pt-BR">
@@ -49,19 +58,20 @@ const nomeProjeto = nomesProjeto[project] ?? project;
     <Nav />
 
     <main>
-      <!-- Header do post -->
+      <!-- Cabecalho do post -->
       <header class="post-header">
         <div class="post-header__inner">
           <a href={`/${project}/`} class="breadcrumb">
             &larr; {nomeProjeto}
           </a>
 
-          <span class="post-project-tag">{nomeProjeto}</span>
+          {numEdicao && (
+            <p class="post-edition-label">EDIÇÃO {numEdicao}</p>
+          )}
 
           <h1 class="post-title">{post.data.title}</h1>
 
-          <p class="post-byline">
-            Nikolas de Hor &middot;
+          <div class="post-byline-bar">
             <time datetime={post.data.pubDate.toISOString()}>
               {post.data.pubDate.toLocaleDateString('pt-BR', {
                 day: '2-digit',
@@ -70,17 +80,15 @@ const nomeProjeto = nomesProjeto[project] ?? project;
                 timeZone: 'America/Sao_Paulo',
               })}
             </time>
-          </p>
-
-          <div class="post-ornament" aria-hidden="true"></div>
-
-          {post.data.tags && post.data.tags.length > 0 && (
-            <div class="post-tags" aria-label="Tags do post">
-              {post.data.tags.map((tag: string) => (
-                <span class="tech-tag">{tag}</span>
-              ))}
-            </div>
-          )}
+            <span class="post-byline-bar__dot" aria-hidden="true">&middot;</span>
+            <span>Nikolas de Hor</span>
+            {post.data.tags && post.data.tags.length > 0 && (
+              <>
+                <span class="post-byline-bar__dot" aria-hidden="true">&middot;</span>
+                <span class="badge">{post.data.tags[0]}</span>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -89,10 +97,10 @@ const nomeProjeto = nomesProjeto[project] ?? project;
         <Content />
       </article>
 
-      <!-- Rodapé do post -->
+      <!-- Rodape do post -->
       <div class="post-footer">
-        <nav class="post-footer__nav" aria-label="Navegação entre posts">
-          <a href={`/${project}/`} class="back-link" style="color: var(--text-link);">
+        <nav class="post-footer__nav" aria-label="Navegacao entre posts">
+          <a href={`/${project}/`} class="back-link">
             &larr; Voltar para {nomeProjeto}
           </a>
         </nav>
