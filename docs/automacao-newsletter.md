@@ -18,7 +18,7 @@ gera rascunhos de post automaticamente, sem flood e sem duplicata.
    essas tags em todas as rodadas futuras.
 
 4. Para cada tag nova encontrada, o script gera um arquivo `.md` em
-   `src/content/posts/<slug>/novidades-<versao>.md` com:
+   `src/content/posts/<slug>/novidades-<versão>.md` com:
    - Frontmatter válido para o schema Astro (`title`, `description`, `pubDate`,
      `project`, `tags`, `ogImage`, `draft: true`)
    - Um comentário HTML no topo avisando que é rascunho a revisar
@@ -117,7 +117,7 @@ gh api repos/DeHor-Labs/mcp-juridico-brasil/releases \
 | `v1.0.0-rc.1`  | `novidades-v1-0-0-rc-1.md` |
 | `v2.0.0`       | `novidades-v2-0-0.md` |
 
-A convenção `novidades-<versao>` garante que:
+A convenção `novidades-<versão>` garante que:
 - Posts manuais de retrospectiva (ex: `edicao-1.md`) não colidem com posts automáticos
 - Rodar o workflow duas vezes para a mesma tag não gera duplicata (arquivo já existe)
 - O slug é legível na URL e deriva diretamente da tag sem ambiguidade
