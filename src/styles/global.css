@@ -147,6 +147,7 @@ body {
   color: var(--text-primary);
   background-color: var(--surface-page);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 img, video {
@@ -289,6 +290,8 @@ a {
   color: var(--text-on-dark);
   margin-top: var(--space-4);
   max-width: 20ch;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hero__subtitle {
@@ -645,6 +648,8 @@ a {
   padding-top: 0.2em;
   transition: opacity 150ms ease;
   user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .edition-row:hover .edition-number {
@@ -745,6 +750,13 @@ a {
   height: 2px;
   background-color: var(--brand-gold);
   margin: var(--space-8) 0;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 /* ============================================

@@ -49,7 +49,7 @@ const meta = metaProjetos[project] ?? {
 
 const primeiraData = posts[posts.length - 1]?.data.pubDate;
 const desde = primeiraData
-  ? primeiraData.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  ? primeiraData.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' })
   : '';
 ---
 
@@ -149,6 +149,7 @@ const desde = primeiraData
                           day: '2-digit',
                           month: 'long',
                           year: 'numeric',
+                          timeZone: 'America/Sao_Paulo',
                         })}
                       </time>
                       <a href={`/${project}/${slug}/`}>Ler &rarr;</a>

@@ -97,7 +97,7 @@ const metaProjetos: Record<string, { nome: string; desc: string; logo: string; g
                       <p class="project-card__desc">{meta.desc}</p>
                     )}
                     <p class="project-card__footer">
-                      {count} {count === 1 ? 'edição' : 'edições'} publicadas
+                      {count} {count === 1 ? 'edição publicada' : 'edições publicadas'}
                     </p>
                   </article>
                 </a>
@@ -141,6 +141,7 @@ const metaProjetos: Record<string, { nome: string; desc: string; logo: string; g
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',
+                        timeZone: 'America/Sao_Paulo',
                       })}
                     </time>
                   </div>

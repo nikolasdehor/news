@@ -67,11 +67,20 @@ const nomeProjeto = nomesProjeto[project] ?? project;
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric',
+                timeZone: 'America/Sao_Paulo',
               })}
             </time>
           </p>
 
           <div class="post-ornament" aria-hidden="true"></div>
+
+          {post.data.tags && post.data.tags.length > 0 && (
+            <div class="post-tags" aria-label="Tags do post">
+              {post.data.tags.map((tag: string) => (
+                <span class="tech-tag">{tag}</span>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 
