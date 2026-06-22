@@ -15,6 +15,10 @@ on:
           - 'false'
           - 'true'
 
+concurrency:
+  group: sync-releases
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -69,7 +73,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: auto/rascunho-releases-${{ github.run_id }}
+          branch: auto/rascunho-releases
           base: main
           commit-message: |
             feat: rascunhos de post para ${{ steps.sync.outputs.summary }}

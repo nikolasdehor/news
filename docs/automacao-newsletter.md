@@ -25,10 +25,17 @@ gera rascunhos de post automaticamente, sem flood e sem duplicata.
    - Corpo com parágrafo de abertura, seção "O que mudou" com as release notes
      originais e seção de links (repo, docs, PyPI, release no GitHub)
 
-5. Se algum rascunho foi gerado, o workflow abre um PR automático na branch
-   `auto/rascunho-releases-<run_id>` com label `rascunho-auto`. O estado
-   atualizado (novas tags marcadas como cobertas) vai junto no mesmo commit,
-   evitando duplicatas mesmo que o workflow rode de novo antes do merge.
+5. Se algum rascunho foi gerado, o workflow abre (ou atualiza, via force-push)
+   um PR na branch estável `auto/rascunho-releases` com label `rascunho-auto`.
+   Usar um nome de branch fixo garante que `peter-evans/create-pull-request`
+   atualize o PR existente em vez de abrir um novo a cada rodada do cron.
+
+   **Importante:** o estado atualizado (`.github/synced-releases.json`) vai no
+   commit do PR, mas a branch de trabalho é `auto/rascunho-releases`, não
+   `main`. Enquanto o PR não for mergeado, a próxima rodada do cron faz
+   force-push na mesma branch e atualiza o PR existente - sem flood de PRs.
+   Após o merge, o estado em `main` passa a cobrir as tags geradas e o script
+   não as processa novamente.
 
 6. Se não há releases novos, o workflow encerra sem abrir PR.
 

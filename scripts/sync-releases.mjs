@@ -13,7 +13,7 @@
  *   DRY_RUN       - se "true", imprime o que faria sem escrever nada
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -31,6 +31,8 @@ const PROJECTS = [
     repo: 'DeHor-Labs/mcp-fiscal-brasil',
     /** Slug usado no diretorio de posts e no campo `project` do frontmatter */
     slug: 'mcp-fiscal-brasil',
+    /** Nome de exibicao com capitalizacao correta (siglas, acentos etc.) */
+    displayName: 'MCP Fiscal Brasil',
     /** Imagem OG padrao do projeto (relativa a /public) */
     ogImage: '/og/mcp-fiscal-brasil.png',
     /** Tags base que todo post deste projeto recebe */
@@ -46,6 +48,7 @@ const PROJECTS = [
   // {
   //   repo: 'DeHor-Labs/mcp-juridico-brasil',
   //   slug: 'mcp-juridico-brasil',
+  //   displayName: 'MCP Jurídico Brasil',
   //   ogImage: '/og/mcp-juridico-brasil.png',
   //   baseTags: ['mcp', 'python', 'juridico', 'brasil', 'open-source'],
   //   links: {
@@ -149,13 +152,13 @@ function generateDraft(release, project) {
   const tag = release.tag_name;
   const pubDateIso = release.published_at.slice(0, 10);
 
-  const titleProject = project.slug
+  const titleProject = project.displayName ?? project.slug
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 
   const title = `Novidades na ${tag} - ${titleProject}`;
-  const description = `O que mudou na versao ${tag.replace(/^v/, '')} do ${titleProject}: funcionalidades novas, correcoes e melhorias de infraestrutura.`;
+  const description = `O que mudou na versão ${tag.replace(/^v/, '')} do ${titleProject}: funcionalidades novas, correções e melhorias de infraestrutura.`;
 
   const tags = [...project.baseTags];
 
@@ -164,7 +167,7 @@ function generateDraft(release, project) {
     tags.push(`v${majorMinor[1]}`);
   }
 
-  const releaseBody = (release.body || '_Sem notas detalhadas para esta versao._').trim();
+  const releaseBody = (release.body || '_Sem notas detalhadas para esta versão._').trim();
 
   return `---
 title: "${yamlStr(title)}"
@@ -176,9 +179,9 @@ ogImage: "${project.ogImage}"
 draft: true
 ---
 
-<!-- RASCUNHO AUTO-GERADO em ${new Date().toISOString().slice(0, 10)} a partir do release ${tag}. Revisar antes de publicar: ajustar tom, completar secoes, mudar draft para false e remover este comentario. -->
+<!-- RASCUNHO AUTO-GERADO em ${new Date().toISOString().slice(0, 10)} a partir do release ${tag}. Revisar antes de publicar: ajustar tom, completar seções, mudar draft para false e remover este comentário. -->
 
-A versao **${tag}** do [${titleProject}](${project.links.repo}) foi publicada em ${pubDateIso}. Confira abaixo o que mudou.
+A versão **${tag}** do [${titleProject}](${project.links.repo}) foi publicada em ${pubDateIso}. Confira abaixo o que mudou.
 
 ---
 
@@ -191,7 +194,7 @@ ${releaseBody}
 ## Como instalar ou atualizar
 
 \`\`\`bash
-# Via uvx (sem instalacao permanente)
+# Via uvx (sem instalação permanente)
 uvx ${project.slug}
 
 # Via pip
@@ -202,15 +205,15 @@ pip install --upgrade ${project.slug}
 
 ## Links
 
-- **Repositorio**: ${project.links.repo}
-${project.links.docs ? `- **Documentacao**: ${project.links.docs}\n` : ''}\
+- **Repositório**: ${project.links.repo}
+${project.links.docs ? `- **Documentação**: ${project.links.docs}\n` : ''}\
 ${project.links.pypi ? `- **PyPI**: ${project.links.pypi}\n` : ''}\
 - **Release no GitHub**: ${release.html_url}
 - **CHANGELOG completo**: ${project.links.repo}/blob/main/CHANGELOG.md
 
 ---
 
-Abraco de Goiania.
+Abraço de Goiânia.
 
 - Nikolas de Hor
 `;
