@@ -1,0 +1,49 @@
+name: Enviar newsletter
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/content/posts/**'
+
+# Evita runs paralelas: se dois posts chegam juntos, o segundo espera.
+concurrency:
+  group: send-newsletter
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  send:
+    name: Detectar e enviar posts novos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enviar broadcasts Resend
+        env:
+          RESEND_DEHOR_API_KEY: ${{ secrets.RESEND_DEHOR_API_KEY }}
+        run: node scripts/send-newsletter.mjs
+
+      - name: Commitar estado atualizado
+        run: |
+          git config user.name "Nikolas de Hor"
+          git config user.email "nikolasdehor79@gmail.com"
+          git add .github/sent-broadcasts.json
+          # Verifica se ha mudanca antes de commitar
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudanca no estado - nada a commitar."
+          else
+            git commit -m "chore: atualizar estado de broadcasts enviados [skip ci]"
+            git push
+          fi
