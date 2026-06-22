@@ -88,12 +88,12 @@ jobs:
 
             **Releases cobertos:** `${{ steps.sync.outputs.summary }}`
 
-            ### Fluxo de revisao
+            ### Fluxo de revisão
 
             1. Revise cada arquivo `.md` em `src/content/posts/`
-            2. Ajuste titulo, descricao, tags e tom conforme necessario
+            2. Ajuste título, descrição, tags e tom conforme necessário
             3. Altere `draft: true` para `draft: false` quando o post estiver pronto
-            4. Aprove e faça merge - o deploy para producao e automatico
+            4. Aprove e faça merge - o deploy para produção é automático
 
             ### Anti-flood
 
