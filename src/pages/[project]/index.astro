@@ -36,6 +36,12 @@ const metaProjetos: Record<string, {
     github: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
     tags: ['Python', 'MCP', 'Open Source'],
   },
+  'mcp-juridico-brasil': {
+    nome: 'MCP Jurídico Brasil',
+    desc: 'Servidor MCP em Python para consulta processual via DataJud CNJ - 91 tribunais, cálculo de prazos e monitoramento de processos.',
+    github: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
+    tags: ['Python', 'MCP', 'Legaltech', 'Open Source'],
+  },
 };
 
 const meta = metaProjetos[project] ?? {
@@ -50,6 +56,7 @@ const totalEdicoes = posts.length;
 // Projetos disponiveis para inscricao (todos os conhecidos)
 const projetosSubscribe = [
   { slug: 'mcp-fiscal-brasil', label: 'MCP Fiscal Brasil' },
+  { slug: 'mcp-juridico-brasil', label: 'MCP Jurídico Brasil' },
 ];
 ---
 

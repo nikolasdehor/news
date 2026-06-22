@@ -28,6 +28,7 @@ const siteDescription = 'Novidades e diário de bordo dos projetos open source d
 // Projetos disponíveis para inscricao
 const projetosSubscribe = [
   { slug: 'mcp-fiscal-brasil', label: 'MCP Fiscal Brasil' },
+  { slug: 'mcp-juridico-brasil', label: 'MCP Jurídico Brasil' },
 ];
 
 // Metadados de projetos
@@ -36,6 +37,11 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
     nome: 'MCP Fiscal Brasil',
     desc: 'Servidor MCP com 44 tools para dados fiscais brasileiros - CNPJ, NF-e, SPED, BCB e Reforma Tributaria. Sem API key obrigatoria.',
     github: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
+  },
+  'mcp-juridico-brasil': {
+    nome: 'MCP Jurídico Brasil',
+    desc: 'Servidor MCP para consulta processual via DataJud CNJ - 91 tribunais, cálculo de prazos e monitoramento de processos. Python, MIT.',
+    github: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
   },
 };
 ---

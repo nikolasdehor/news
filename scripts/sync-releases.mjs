@@ -44,19 +44,18 @@ const PROJECTS = [
       pypi: 'https://pypi.org/project/mcp-fiscal-brasil/',
     },
   },
-  // Para adicionar mcp-juridico-brasil no futuro, descomente e ajuste:
-  // {
-  //   repo: 'DeHor-Labs/mcp-juridico-brasil',
-  //   slug: 'mcp-juridico-brasil',
-  //   displayName: 'MCP Jurídico Brasil',
-  //   ogImage: '/og/mcp-juridico-brasil.png',
-  //   baseTags: ['mcp', 'python', 'juridico', 'brasil', 'open-source'],
-  //   links: {
-  //     repo: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
-  //     docs: 'https://dehor-labs.github.io/mcp-juridico-brasil/',
-  //     pypi: 'https://pypi.org/project/mcp-juridico-brasil/',
-  //   },
-  // },
+  {
+    repo: 'DeHor-Labs/mcp-juridico-brasil',
+    slug: 'mcp-juridico-brasil',
+    displayName: 'MCP Jurídico Brasil',
+    ogImage: '/og/mcp-juridico-brasil.png',
+    baseTags: ['mcp', 'python', 'juridico', 'brasil', 'open-source'],
+    links: {
+      repo: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
+      docs: 'https://dehor-labs.github.io/mcp-juridico-brasil/',
+      pypi: 'https://pypi.org/project/mcp-juridico-brasil/',
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------

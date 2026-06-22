@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // Mapa slug -> audienceId do Resend
 const AUDIENCE_MAP: Record<string, string> = {
   'mcp-fiscal-brasil': 'aa0cf115-92eb-43d3-9cb9-e44cfca93619',
+  'mcp-juridico-brasil': '6ba82c07-2987-4bf7-a261-431eb2ae5a31',
 };
 
 const VALID_SLUGS = new Set(Object.keys(AUDIENCE_MAP));
