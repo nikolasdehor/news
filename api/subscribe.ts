@@ -8,6 +8,56 @@ const AUDIENCE_MAP: Record<string, string> = {
 
 const VALID_SLUGS = new Set(Object.keys(AUDIENCE_MAP));
 
+// Rate limit in-memory por IP: janela fixa, sem dependencia nova.
+// ponytail: estado por instancia de lambda (serverless multi-instancia
+// enfraquece o limite, cada instancia conta separado). Aceitavel para
+// este endpoint de baixo risco (inscricao de newsletter). Se precisar
+// de limite global rigoroso, trocar por Upstash Redis (@upstash/ratelimit).
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutos
+const RATE_LIMIT_MAX_REQUESTS = 5;
+const rateLimitHits = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(req: VercelRequest): string {
+  // x-real-ip e definido pelo edge da Vercel e nao pode ser forjado pelo
+  // cliente. x-forwarded-for pode ser manipulado por quem faz a requisicao
+  // (bastaria mandar um IP diferente a cada chamada pra escapar do limite).
+  const realIp = req.headers['x-real-ip'];
+  if (typeof realIp === 'string' && realIp) return realIp;
+
+  const forwardedFor = req.headers['x-forwarded-for'];
+  const raw = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+  const ip = raw?.split(',')[0]?.trim();
+  return ip || req.socket?.remoteAddress || 'unknown';
+}
+
+// ponytail: sweep de entradas expiradas para nao crescer sem limite
+// numa instancia de lambda que fica quente por muito tempo.
+const RATE_LIMIT_MAX_TRACKED_IPS = 5000;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitHits.get(ip);
+
+  if (!entry || now >= entry.resetAt) {
+    if (rateLimitHits.size >= RATE_LIMIT_MAX_TRACKED_IPS) {
+      for (const [key, value] of rateLimitHits) {
+        if (now >= value.resetAt) rateLimitHits.delete(key);
+      }
+      // Sem entradas expiradas pra liberar (burst de IPs novos): descarta a
+      // mais antiga (ordem de insercao do Map) pra nunca crescer sem limite.
+      if (rateLimitHits.size >= RATE_LIMIT_MAX_TRACKED_IPS) {
+        const oldestKey = rateLimitHits.keys().next().value;
+        if (oldestKey !== undefined) rateLimitHits.delete(oldestKey);
+      }
+    }
+    rateLimitHits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  entry.count += 1;
+  return entry.count > RATE_LIMIT_MAX_REQUESTS;
+}
+
 function isValidEmail(email: unknown): email is string {
   if (typeof email !== 'string') return false;
   // RFC 5322 simplificado - robusto o suficiente para validacao de formulario
@@ -33,6 +83,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!allowedOrigins.some((o) => origin === o)) {
       return res.status(403).json({ ok: false, error: 'Origem não permitida.' });
     }
+  }
+
+  // Rate limit por IP
+  const clientIp = getClientIp(req);
+  if (isRateLimited(clientIp)) {
+    return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tente novamente mais tarde.' });
   }
 
   const { email, projects, website } = req.body ?? {};
