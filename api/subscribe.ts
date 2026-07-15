@@ -18,6 +18,12 @@ const RATE_LIMIT_MAX_REQUESTS = 5;
 const rateLimitHits = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(req: VercelRequest): string {
+  // x-real-ip e definido pelo edge da Vercel e nao pode ser forjado pelo
+  // cliente. x-forwarded-for pode ser manipulado por quem faz a requisicao
+  // (bastaria mandar um IP diferente a cada chamada pra escapar do limite).
+  const realIp = req.headers['x-real-ip'];
+  if (typeof realIp === 'string' && realIp) return realIp;
+
   const forwardedFor = req.headers['x-forwarded-for'];
   const raw = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
   const ip = raw?.split(',')[0]?.trim();
@@ -36,6 +42,12 @@ function isRateLimited(ip: string): boolean {
     if (rateLimitHits.size >= RATE_LIMIT_MAX_TRACKED_IPS) {
       for (const [key, value] of rateLimitHits) {
         if (now >= value.resetAt) rateLimitHits.delete(key);
+      }
+      // Sem entradas expiradas pra liberar (burst de IPs novos): descarta a
+      // mais antiga (ordem de insercao do Map) pra nunca crescer sem limite.
+      if (rateLimitHits.size >= RATE_LIMIT_MAX_TRACKED_IPS) {
+        const oldestKey = rateLimitHits.keys().next().value;
+        if (oldestKey !== undefined) rateLimitHits.delete(oldestKey);
       }
     }
     rateLimitHits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
