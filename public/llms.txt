@@ -1,0 +1,15 @@
+# news.dehor.com.br
+
+> Publicações e diário de bordo dos projetos open source de Nikolas de Hor.
+
+## Página pública
+
+- [Início](https://news.dehor.com.br/): projetos e publicações recentes.
+- [Versão Markdown](https://news.dehor.com.br/index.md): conteúdo textual da página inicial.
+- [RSS](https://news.dehor.com.br/rss.xml): feed das publicações.
+- [Sitemap](https://news.dehor.com.br/sitemap-index.xml): URLs públicas do site.
+
+## Projetos acompanhados
+
+- [MCP Fiscal Brasil](https://news.dehor.com.br/mcp-fiscal-brasil/): atualizações do servidor MCP para dados fiscais brasileiros.
+- [MCP Jurídico Brasil](https://news.dehor.com.br/mcp-juridico-brasil/): atualizações do servidor MCP para consulta processual e prazos.

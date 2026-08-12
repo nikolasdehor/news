@@ -53,6 +53,7 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
       description={siteDescription}
       canonicalURL={new URL('/', Astro.site)}
     />
+    <link rel="alternate" type="text/markdown" href="/index.md" />
     <link rel="icon" type="image/png" href="/logo-mcp-fiscal.png" />
     <meta name="generator" content={Astro.generator} />
   </head>
