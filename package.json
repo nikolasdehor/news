@@ -17,9 +17,15 @@
     "@fontsource-variable/geist": "^5.2.9",
     "@fontsource/geist-mono": "^5.2.8",
     "@fontsource/lora": "^5.2.8",
-    "astro": "^7.1.0"
+    "astro": "^7.2.4"
   },
   "devDependencies": {
-    "@vercel/node": "^5.8.17"
+    "@vercel/node": "^7.0.0"
+  },
+  "overrides": {
+    "undici": "^6.28.0",
+    "path-to-regexp": "^6.3.0",
+    "ajv": "^8.18.0",
+    "esbuild": "^0.28.1"
   }
 }
