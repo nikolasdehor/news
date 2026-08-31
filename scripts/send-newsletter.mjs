@@ -42,6 +42,12 @@ const BLOG_BASE = 'https://news.dehor.com.br';
 const STATE_FILE = join(ROOT, '.github', 'sent-broadcasts.json');
 const POSTS_DIR = join(ROOT, 'src', 'content', 'posts');
 
+/** Map project -> topic ID no Resend. */
+const TOPIC_MAP = {
+  'mcp-fiscal-brasil': '3d7e1b32-b5e5-4c4b-92bf-01bf2a47705c',
+  'mcp-juridico-brasil': '46698b02-39b5-4dd1-864b-b7bc6d10eae0',
+};
+
 // ---------------------------------------------------------------------------
 // Helpers de frontmatter
 // ---------------------------------------------------------------------------
@@ -218,7 +224,7 @@ function markdownToHtml(md) {
 // Gerador de HTML do e-mail
 // ---------------------------------------------------------------------------
 
-function buildEmailHtml({ title, description, project, slug, bodyHtml }) {
+export function buildEmailHtml({ title, description, project, slug, bodyHtml }) {
   const readUrl = `${BLOG_BASE}/${project}/${slug}`;
   const projectLabel = project
     .split('-')
@@ -353,7 +359,7 @@ function buildEmailHtml({ title, description, project, slug, bodyHtml }) {
                 <a href="${BLOG_BASE}" target="_blank" style="color: #1A7A4A; text-decoration: none;">news.dehor.com.br</a>.
               </p>
               <p style="margin: 0 0 16px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #AAAAAA; line-height: 1.6;">
-                <a href="${BLOG_BASE}/unsubscribe" target="_blank" style="color: #AAAAAA; text-decoration: underline;">Descadastrar</a>
+                <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" target="_blank" style="color: #AAAAAA; text-decoration: underline;">Descadastrar</a>
                 &nbsp;&middot;&nbsp; Nikolas de Hor &nbsp;&middot;&nbsp; Goiânia, GO, Brasil
               </p>
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -405,14 +411,22 @@ async function resendPost(path, body) {
   return json;
 }
 
-async function createAndSendBroadcast({ audienceId, subject, htmlContent }) {
-  // 1. Criar broadcast
-  const created = await resendPost('/broadcasts', {
-    audience_id: audienceId,
+export function buildBroadcastPayload({ segmentId, topicId, subject, htmlContent }) {
+  return {
+    segment_id: segmentId,
+    topic_id: topicId,
     from: FROM,
     subject,
     html: htmlContent,
-  });
+  };
+}
+
+async function createAndSendBroadcast({ segmentId, topicId, subject, htmlContent }) {
+  // 1. Criar broadcast
+  const created = await resendPost(
+    '/broadcasts',
+    buildBroadcastPayload({ segmentId, topicId, subject, htmlContent }),
+  );
   const broadcastId = created.id;
   console.log(`  [resend] Broadcast criado: ${broadcastId}`);
 
@@ -478,9 +492,10 @@ async function main() {
       continue;
     }
 
-    const audienceId = AUDIENCE_MAP[project];
-    if (!audienceId) {
-      console.warn(`  [aviso] Sem audience configurada para projeto: ${project}`);
+    const segmentId = AUDIENCE_MAP[project];
+    const topicId = TOPIC_MAP[project];
+    if (!segmentId || !topicId) {
+      console.warn(`  [aviso] Sem segmento configurado para projeto: ${project}`);
       continue;
     }
 
@@ -497,13 +512,16 @@ async function main() {
     });
 
     if (DRY_RUN) {
-      console.log(`  [dry-run] Simularia broadcast para audience ${audienceId}`);
+      console.log(
+        `  [dry-run] Simularia broadcast para segmento ${segmentId} e topico ${topicId}`,
+      );
       console.log(`  [dry-run] Assunto: ${fm.title}`);
       console.log(`  [dry-run] HTML valido: ${htmlContent.includes('<!DOCTYPE html>') ? 'SIM' : 'NAO'}`);
       console.log(`  [dry-run] Tamanho HTML: ${htmlContent.length} chars`);
     } else {
       const broadcastId = await createAndSendBroadcast({
-        audienceId,
+        segmentId,
+        topicId,
         subject: fm.title || slug,
         htmlContent,
       });
@@ -541,7 +559,9 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error('[send-newsletter] ERRO FATAL:', err);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error('[send-newsletter] ERRO FATAL:', err);
+    process.exit(1);
+  });
+}

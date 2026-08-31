@@ -1,0 +1,64 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+const updatedAt = '1º de setembro de 2026';
+---
+
+<html lang="pt-BR">
+  <head>
+    <Head
+      title="Política de privacidade — DeHor News"
+      description="Como o DeHor News trata dados da inscrição na newsletter."
+      canonicalURL={new URL('/privacidade/', Astro.site)}
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+    <main class="section">
+      <article class="container container--reading prose legal-page">
+        <p class="section-label">Privacidade</p>
+        <h1>Política de privacidade</h1>
+        <p>Atualizada em {updatedAt}.</p>
+
+        <h2>Quem controla os dados</h2>
+        <p>O DeHor News é mantido por Nikolas de Hor. Dúvidas e solicitações podem ser enviadas para <a href="mailto:nikolasdehor79@gmail.com">nikolasdehor79@gmail.com</a>.</p>
+
+        <h2>Quais dados são tratados</h2>
+        <p>Na inscrição, tratamos o endereço de e-mail, os projetos escolhidos, a versão do consentimento e eventos necessários para confirmar ou concluir o pedido. O endereço IP é usado temporariamente para limitar tentativas abusivas. Tokens de confirmação expiram em 30 minutos; o banco armazena apenas o hash do nonce, não o token em texto aberto.</p>
+
+        <h2>Finalidade e base</h2>
+        <p>Usamos esses dados para confirmar que o endereço pertence a quem solicitou a inscrição, enviar as edições escolhidas, aplicar preferências e evitar abuso. O envio editorial se apoia no consentimento dado no formulário e confirmado por e-mail.</p>
+
+        <h2>Fornecedores</h2>
+        <ul>
+          <li><strong>Vercel:</strong> hospedagem, execução das rotas e registros técnicos.</li>
+          <li><strong>Neon:</strong> banco PostgreSQL para nonces e travas temporárias de processamento.</li>
+          <li><strong>Resend:</strong> envio da confirmação, cadastro do contato e preferências de recebimento.</li>
+        </ul>
+        <p>Esses fornecedores podem processar dados fora do Brasil conforme seus próprios contratos e políticas. O site serve as fontes tipográficas localmente e não usa analytics ou publicidade comportamental próprios.</p>
+
+        <h2>Retenção e segurança</h2>
+        <p>Registros de confirmação expiram e são removidos pela rotina operacional. O e-mail e as preferências ficam no provedor de envio enquanto a inscrição estiver ativa ou pelo período necessário para cumprir solicitações e obrigações aplicáveis. Entradas do limitador por IP expiram em cerca de dez minutos na instância que as recebeu. Aplicamos criptografia autenticada aos tokens, conexão segura e acesso restrito, embora nenhum sistema seja imune a incidentes.</p>
+
+        <h2>Seus direitos</h2>
+        <p>Você pode pedir confirmação de tratamento, acesso, correção, exclusão ou revogação do consentimento pelo e-mail acima. Também pode usar o mecanismo de descadastro presente nas mensagens. A revogação não torna ilegítimo o tratamento realizado antes do pedido.</p>
+
+        <h2>Alterações</h2>
+        <p>Esta página pode mudar quando o fluxo ou os fornecedores mudarem. A data no topo identifica a versão pública vigente.</p>
+
+        <p><a href="/">Voltar para a página inicial</a></p>
+      </article>
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .legal-page {
+    padding-block: var(--space-8);
+  }
+</style>
