@@ -1,12 +1,22 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import {
+  CONSENT_VERSION,
+  createConfirmationNonce,
+  createConfirmationToken,
+  fetchResend,
+  newsletterPublicBaseUrl,
+} from '../lib/newsletter-confirmation.ts';
+import {
+  saveConfirmationNonce,
+} from '../lib/newsletter-confirmation-store.ts';
 
-// Mapa slug -> audienceId do Resend
-const AUDIENCE_MAP: Record<string, string> = {
+// Mapa slug -> segmento do Resend
+const SEGMENT_MAP: Record<string, string> = {
   'mcp-fiscal-brasil': 'aa0cf115-92eb-43d3-9cb9-e44cfca93619',
   'mcp-juridico-brasil': '6ba82c07-2987-4bf7-a261-431eb2ae5a31',
 };
 
-const VALID_SLUGS = new Set(Object.keys(AUDIENCE_MAP));
+const VALID_SLUGS = new Set(Object.keys(SEGMENT_MAP));
 
 // Rate limit in-memory por IP: janela fixa, sem dependencia nova.
 // ponytail: estado por instancia de lambda (serverless multi-instancia
@@ -109,60 +119,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(422).json({ ok: false, error: 'Selecione ao menos um projeto.' });
   }
 
-  const validProjects = (projects as unknown[])
-    .filter((p): p is string => typeof p === 'string' && VALID_SLUGS.has(p));
-
-  if (validProjects.length === 0) {
-    return res.status(422).json({ ok: false, error: 'Nenhum projeto válido selecionado.' });
+  if (!(projects as unknown[]).every((project) =>
+    typeof project === 'string' && VALID_SLUGS.has(project))) {
+    return res.status(422).json({ ok: false, error: 'Projeto inválido selecionado.' });
+  }
+  const validProjects = [...new Set(projects as string[])];
+  if (validProjects.length !== projects.length || validProjects.length > VALID_SLUGS.size) {
+    return res.status(422).json({ ok: false, error: 'Projetos duplicados ou em excesso.' });
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
+  const confirmationSecret = process.env.NEWSLETTER_CONFIRMATION_SECRET;
+  const from = process.env.NEWSLETTER_FROM_EMAIL;
+  if (!apiKey || !confirmationSecret || confirmationSecret.length < 32 || !from) {
     // Nao expoe detalhes de configuracao
     return res.status(500).json({ ok: false, error: 'Erro interno. Tente novamente mais tarde.' });
   }
 
-  // Inscreve em cada audience do Resend
-  const errors: string[] = [];
-  for (const slug of validProjects) {
-    const audienceId = AUDIENCE_MAP[slug];
-    try {
-      const response = await fetch(
-        `https://api.resend.com/audiences/${audienceId}/contacts`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: email.trim().toLowerCase(),
-            unsubscribed: false,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const data: Record<string, unknown> = await response.json().catch(() => ({}));
-        // Contato ja existente (409 ou mensagem especifica) -> tratar como sucesso
-        const msg = typeof data.message === 'string' ? data.message : '';
-        const isAlreadyExists =
-          response.status === 409 ||
-          msg.toLowerCase().includes('already');
-
-        if (!isAlreadyExists) {
-          errors.push(slug);
-        }
-        // Se ja existe, continua sem registrar erro
-      }
-    } catch {
-      errors.push(slug);
-    }
-  }
-
-  if (errors.length > 0) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const expiresAt = Date.now() + 30 * 60 * 1000;
+  const nonce = createConfirmationNonce();
+  try {
+    await saveConfirmationNonce(nonce, expiresAt);
+    const token = createConfirmationToken({
+      email: normalizedEmail,
+      projects: validProjects,
+      consentVersion: CONSENT_VERSION,
+      nonce,
+      expiresAt,
+    }, confirmationSecret);
+    const confirmationUrl = new URL('/api/confirm', newsletterPublicBaseUrl(process.env));
+    confirmationUrl.searchParams.set('token', token);
+    const response = await fetchResend('https://api.resend.com/emails', apiKey, {
+      method: 'POST',
+      body: JSON.stringify({
+        from,
+        to: [normalizedEmail],
+        subject: 'Confirme sua inscrição no DeHor News',
+        text: `Confirme sua inscrição: ${confirmationUrl.toString()}\n\nO link expira em 30 minutos.`,
+        html: `<p>Confirme sua inscrição no DeHor News:</p><p><a href="${confirmationUrl.toString()}">Confirmar inscrição</a></p><p>O link expira em 30 minutos.</p>`,
+      }),
+    });
+    if (!response.ok) throw new Error('confirmation send failed');
+  } catch {
     return res.status(500).json({ ok: false, error: 'Erro ao salvar inscrição. Tente novamente.' });
   }
 
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({ ok: true, confirmationRequired: true });
 }

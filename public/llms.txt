@@ -6,6 +6,7 @@
 
 - [Início](https://news.dehor.com.br/): projetos e publicações recentes.
 - [Versão Markdown](https://news.dehor.com.br/index.md): conteúdo textual da página inicial.
+- [Política de privacidade](https://news.dehor.com.br/privacidade/): dados tratados no formulário, finalidades, fornecedores e direitos.
 - [RSS](https://news.dehor.com.br/rss.xml): feed das publicações.
 - [Sitemap](https://news.dehor.com.br/sitemap-index.xml): URLs públicas do site.
 
@@ -13,3 +14,7 @@
 
 - [MCP Fiscal Brasil](https://news.dehor.com.br/mcp-fiscal-brasil/): atualizações do servidor MCP para dados fiscais brasileiros.
 - [MCP Jurídico Brasil](https://news.dehor.com.br/mcp-juridico-brasil/): atualizações do servidor MCP para consulta processual e prazos.
+
+## Perguntas frequentes
+
+A página inicial responde como funciona a confirmação, quais preferências podem ser escolhidas, a frequência de envio, o cancelamento e os limites do conteúdo publicado.

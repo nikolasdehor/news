@@ -20,6 +20,14 @@ npm run build
 npm run preview
 ```
 
+O fluxo de inscrição exige `RESEND_API_KEY`, `NEWSLETTER_CONFIRMATION_SECRET`
+(mínimo de 32 caracteres), `NEWSLETTER_FROM_EMAIL` e `DATABASE_URL`. Fora da
+Vercel, configure também `NEWSLETTER_PUBLIC_URL` com a origem pública local;
+previews da Vercel usam `VERCEL_URL` automaticamente. Antes do deploy, aplique
+`db/migrations/001_newsletter_confirmation_nonces.sql` no Postgres; ela cria
+tanto os nonces quanto os locks de sincronização por contato e é idempotente.
+O contato só é inscrito depois de abrir o link recebido por e-mail e confirmar no botão.
+
 ## Estrutura de pastas
 
 ```

@@ -135,6 +135,36 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
           </div>
         </div>
       </section>
+
+      <section class="section" aria-labelledby="faq-titulo">
+        <div class="container container--reading faq-list">
+          <h2 class="section-label" id="faq-titulo">Perguntas frequentes</h2>
+          <details>
+            <summary>O que eu recebo ao me inscrever?</summary>
+            <p>Você recebe por e-mail apenas as novas edições dos projetos que selecionar. O cadastro não dá acesso a áreas privadas nem altera a licença dos projetos.</p>
+          </details>
+          <details>
+            <summary>Preciso confirmar meu e-mail?</summary>
+            <p>Sim. A inscrição só é concluída depois que você abre o link recebido e confirma a solicitação. O link expira em 30 minutos.</p>
+          </details>
+          <details>
+            <summary>Posso escolher mais de um projeto?</summary>
+            <p>Sim. As preferências são registradas por projeto e podem ser atualizadas quando você fizer uma nova confirmação com o mesmo endereço.</p>
+          </details>
+          <details>
+            <summary>Com que frequência os e-mails são enviados?</summary>
+            <p>Não existe calendário fixo. Os envios acompanham publicações reais; não prometemos uma edição quando não houver novidade relevante.</p>
+          </details>
+          <details>
+            <summary>Como cancelo a inscrição?</summary>
+            <p>Use o mecanismo de descadastro do e-mail recebido ou escreva para o contato informado na <a href="/privacidade/">política de privacidade</a>.</p>
+          </details>
+          <details>
+            <summary>O conteúdo substitui orientação profissional?</summary>
+            <p>Não. As edições documentam projetos e aprendizados técnicos. Conteúdo fiscal ou jurídico é informativo e deve ser conferido nas fontes oficiais e com profissionais responsáveis.</p>
+          </details>
+        </div>
+      </section>
     </main>
 
     <!-- Inscricao na newsletter -->
@@ -146,3 +176,31 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
     <Footer />
   </body>
 </html>
+
+<style>
+  .faq-list details {
+    border-bottom: 1px solid var(--color-border);
+    padding-block: var(--space-5);
+  }
+
+  .faq-list summary {
+    align-items: center;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    display: flex;
+    font-weight: 650;
+    line-height: var(--leading-snug);
+    min-height: 44px;
+  }
+
+  .faq-list p {
+    margin-top: var(--space-3);
+    line-height: var(--leading-relaxed);
+  }
+
+  .faq-list a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+</style>

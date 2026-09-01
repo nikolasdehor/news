@@ -96,6 +96,10 @@ const formId = `subscribe-form-${Math.random().toString(36).slice(2, 8)}`;
         <span class="subscribe-btn__loading" aria-hidden="true">Enviando...</span>
       </button>
 
+      <p class="subscribe-consent">
+        Ao solicitar a inscrição, você concorda com o uso do e-mail e das preferências selecionadas para este envio, conforme a <a href="/privacidade/">política de privacidade</a>. O cadastro só é ativado após sua confirmação.
+      </p>
+
       <!-- Feedback -->
       <div
         id={`${formId}-status`}
@@ -140,6 +144,20 @@ const formId = `subscribe-form-${Math.random().toString(36).slice(2, 8)}`;
       return values;
     }
 
+    const confirmationResult = new URLSearchParams(window.location.search).get('inscricao');
+    if (confirmationResult === 'confirmada') {
+      setStatus('success', 'Inscrição confirmada. Você vai receber as novidades selecionadas.');
+    } else if (confirmationResult === 'processando') {
+      setStatus('success', 'Sua confirmação já está em processamento. Aguarde um instante antes de abrir novamente o link recebido.');
+    } else if (confirmationResult === 'erro') {
+      setStatus('error', 'O link é inválido ou expirou. Solicite uma nova confirmação.');
+    }
+    if (confirmationResult === 'confirmada' || confirmationResult === 'processando' || confirmationResult === 'erro') {
+      statusEl.setAttribute('tabindex', '-1');
+      statusEl.scrollIntoView({ block: 'center' });
+      statusEl.focus();
+    }
+
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       setStatus('', '');
@@ -169,7 +187,7 @@ const formId = `subscribe-form-${Math.random().toString(36).slice(2, 8)}`;
         const data = await res.json().catch(() => ({ ok: false }));
 
         if (data.ok) {
-          setStatus('success', 'Pronto! Você vai receber as novidades.');
+          setStatus('success', 'Enviamos um link por e-mail. Confirme para concluir a inscrição.');
           form.reset();
         } else {
           setStatus('error', data.error || 'Algo deu errado. Tente novamente.');
@@ -217,6 +235,18 @@ const formId = `subscribe-form-${Math.random().toString(36).slice(2, 8)}`;
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
+  }
+
+  .subscribe-consent {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-relaxed);
+  }
+
+  .subscribe-consent a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
   }
 
   /* ---- Honeypot ---- */
@@ -361,6 +391,7 @@ const formId = `subscribe-form-${Math.random().toString(36).slice(2, 8)}`;
       opacity var(--duration-fast) ease;
     align-self: flex-start;
     min-width: 120px;
+    min-height: 44px;
     text-align: center;
   }
 
