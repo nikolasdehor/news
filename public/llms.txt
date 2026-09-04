@@ -2,14 +2,29 @@
 
 > Publicações e diário de bordo dos projetos open source de Nikolas de Hor, em Goiânia, Brasil.
 
-## Quando usar (When to use this site)
+## Quando usar
 
 - Acompanhar atualizações e novidades dos projetos open source MCP Fiscal Brasil e MCP Jurídico Brasil.
 - Encontrar links verificáveis (GitHub, PyPI, documentação) de cada projeto a partir das edições publicadas.
 - Assinar por e-mail as novidades de um projeto específico, sem precisar seguir redes sociais.
-- Obter um resumo legível por máquina do site (este arquivo, [index.md](https://news.dehor.com.br/index.md) e o [sitemap](https://news.dehor.com.br/sitemap-index.xml)).
+- Obter um resumo legível por máquina do site (este arquivo, [index.md](https://news.dehor.com.br/index.md) e o [sitemap](https://news.dehor.com.br/sitemap.xml)).
 
-Não é o site oficial de nenhum dos projetos, nem um produto SaaS com login: é apenas o diário de publicações. Código, documentação e pacotes ficam nos repositórios do GitHub, não aqui.
+## Quando não usar
+
+- Não use como documentação técnica oficial dos servidores MCP (consulte os repositórios correspondentes no GitHub ou páginas de documentação).
+- Não use como aplicação SaaS interativa ou com área logada (é um blog e publicação estática pública).
+- Não use para envio de mensagens automatizadas ou spam via formulário de newsletter.
+
+## Autenticação e acesso
+
+- **Superfície pública**: Todo o conteúdo editorial, feeds RSS, sitemaps e arquivos de orientação são 100% públicos e não exigem autenticação.
+- **Inscrição de newsletter**: O formulário de inscrição é público e requer apenas um e-mail válido. Requisições passam por rate limiting in-memory por IP para prevenção contra abuso.
+
+## Limites operacionais e fallbacks
+
+- **Rate limiting de newsletter**: Máximo de 5 inscrições por IP a cada 10 minutos (HTTP 429 retornado em caso de excesso).
+- **Fallback para agentes**: Rotas não existentes retornam HTTP 404 real com links de recuperação para a página inicial, sitemap e llms.txt.
+- **Contato com o autor**: Para correções, dúvidas ou remoção de e-mail de assinante, entre em contato via [nikolasdehor79@gmail.com](mailto:nikolasdehor79@gmail.com).
 
 ## Pages
 
@@ -19,7 +34,7 @@ Não é o site oficial de nenhum dos projetos, nem um produto SaaS com login: é
 - [Privacidade](https://news.dehor.com.br/privacidade) · [Privacy (English)](https://news.dehor.com.br/privacy)
 - [Versão Markdown](https://news.dehor.com.br/index.md): conteúdo textual da página inicial.
 - [RSS](https://news.dehor.com.br/rss.xml): feed de todas as publicações.
-- [Sitemap](https://news.dehor.com.br/sitemap-index.xml): URLs públicas do site.
+- [Sitemap](https://news.dehor.com.br/sitemap.xml): URLs públicas do site.
 
 ## Projetos acompanhados
 

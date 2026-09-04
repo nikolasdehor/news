@@ -1,5 +1,11 @@
 {
   "framework": "astro",
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap-index.xml"
+    }
+  ],
   "routes": [
     {
       "src": "/",
@@ -18,6 +24,31 @@
   ],
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'"
+        }
+      ]
+    },
+    {
       "source": "/",
       "headers": [
         {
@@ -26,7 +57,7 @@
         },
         {
           "key": "Link",
-          "value": "</sitemap-index.xml>; rel=\"sitemap\"; type=\"application/xml\", </index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\""
+          "value": "</sitemap.xml>; rel=\"sitemap\"; type=\"application/xml\", </index.md>; rel=\"alternate\"; type=\"text/markdown\", </llms.txt>; rel=\"describedby\"; type=\"text/plain\""
         }
       ]
     },

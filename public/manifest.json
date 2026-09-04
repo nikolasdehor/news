@@ -1,0 +1,16 @@
+{
+  "name": "DeHor News",
+  "short_name": "DeHorNews",
+  "description": "Publicações e diário de bordo dos projetos open source de Nikolas de Hor",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

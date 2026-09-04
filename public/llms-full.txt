@@ -1,0 +1,123 @@
+# news.dehor.com.br
+> Blog e diário de bordo dos projetos open source de Nikolas de Hor - desenvolvedor de Goiânia, Brasil.
+
+Hub de novidades dos servidores MCP (Model Context Protocol) para dados fiscais e jurídicos brasileiros. Publicações com histórico de versões, decisões técnicas e evolução dos projetos. Código aberto, MIT, publicado no GitHub.
+
+---
+
+## MCP Fiscal Brasil
+URL: https://news.dehor.com.br/mcp-fiscal-brasil/
+
+Servidor MCP em Python com 44 tools para dados fiscais e tributários brasileiros. Suporta CNPJ, NF-e, SPED, eSocial, BCB, tabelas fiscais offline (NCM/TIPI, CFOP, CST, ICMS interestadual), importação e simulador da Reforma Tributária IBS/CBS. Sem API key obrigatória. MIT.
+
+Repositório: https://github.com/DeHor-Labs/mcp-fiscal-brasil
+PyPI: https://pypi.org/project/mcp-fiscal-brasil/
+Documentação: https://dehor-labs.github.io/mcp-fiscal-brasil/
+
+Instalação: uvx mcp-fiscal-brasil
+
+---
+
+## MCP Jurídico Brasil
+URL: https://news.dehor.com.br/mcp-juridico-brasil/
+
+Servidor MCP em Python para consulta processual via DataJud CNJ. Cobre 91 tribunais brasileiros (Federal, Estadual, Trabalho, Militar, Eleitoral, Superior). Cálculo de prazos processuais offline (dias úteis, feriados, recesso forense CPC arts. 219-224). MIT.
+
+Repositório: https://github.com/DeHor-Labs/mcp-juridico-brasil
+PyPI: https://pypi.org/project/mcp-juridico-brasil/
+
+Instalação: uvx mcp-juridico-brasil
+
+---
+
+## Edição 1 - MCP Fiscal Brasil: de zero a 44 tools
+URL: https://news.dehor.com.br/mcp-fiscal-brasil/edicao-1/
+Data: 22 de junho de 2026
+
+Relato dos primeiros três meses do projeto MCP Fiscal Brasil - do protótipo à v0.5.1 com 44 tools.
+
+### v0.1.0 (março de 2026)
+Lançamento com 8 módulos fiscais básicos, 14 tools MCP iniciais, CI com GitHub Actions, lint e publicação no PyPI. Suite de ~70 testes.
+
+### v0.2.0 (maio de 2026)
+Infraestrutura production-grade com _core/ compartilhado (httpx + tenacity, cache SQLite/Redis, rate-limit, logs JSON, pydantic-settings). 8 novos módulos: CNAE, CPF, Simples Nacional, MEI, IBGE, CEP, Empresa consolidada, Certidões. Tools agênticas de alto nível:
+
+- analyze_cnpj_compliance: consolida CNPJ + Simples + MEI + CNAE, score 0-100 e risco classificado
+- compare_tax_regimes: compara MEI, Simples, Lucro Presumido e Real com alíquota efetiva estimada
+- risk_score_supplier: due diligence de fornecedor com recomendação (aprovar/investigar/recusar)
+- validate_nfe_full: parse XML + validação de chave + situação do emissor
+- summarize_sped: sumário executivo de arquivo SPED
+- consultar_empresas_lote: triagem em lote de fornecedores com score e erros por CNPJ
+
+Interfaces adicionais: CLI standalone (mcp-fiscal), REST API com Web UI demo (mcp-fiscal-api), wrapper Node.js em preview. Suite cresceu para 117 testes.
+
+### v0.3.0 (junho de 2026)
+Tabelas fiscais offline embutidas no pacote (SQLite com TIPI completa): NCM, CFOP, CST/CSOSN, CEST, ICMS interestadual. Indexadores BCB: Selic, IPCA acumulado, PTAX, correção monetária. Total de tools: 36. Suite: 327 testes.
+
+Correção importante: inversão das alíquotas de ICMS interestadual entre Sul/Sudeste e N/NE/CO/ES (Resolução Senado Federal n. 22/1989).
+
+### v0.4.0 (junho de 2026)
+NF-e completa: parse XML (parse_nfe_xml), DANFE PDF (gerar_danfe), validação de assinatura XMLDSig (validar_assinatura_nfe), distribuição via NFeDistribuicaoDFe com mTLS (baixar_nfe_distribuicao), manifestação do destinatário (manifestar_nfe). Distribuição e manifestação são opt-in com certificado A1 local.
+
+Simulador da Reforma Tributária IBS/CBS (simular_transicao_reforma_tributaria): informa valor bruto, alíquotas atuais e CNAE; retorna tabela anual 2026-2033 com carga comparada. Offline, sem API key. Fonte: LC 214/2025 e Resolução CG-IBS n. 1/2025.
+
+Total de tools: 42.
+
+### v0.5.0 e v0.5.1 (junho de 2026)
+Módulo de importação: consultar_aliquotas_importacao (IPI offline, defaults PIS/COFINS-importação) e calcular_tributos_importacao (cascata completa: II, IPI, PIS/COFINS-importação, ICMS grossed-up, AFRMM, taxa Siscomex).
+
+Circuit breaker para NFS-e Nacional: após 5 falhas consecutivas, bloqueia chamadas por 60 segundos.
+
+Correções no parser SPED: PIS (M210), COFINS (M610) e ICMS (E110) corretamente separados. Fix de segurança CodeQL (alta severidade): validação de caminhos de arquivo contra path injection.
+
+Automação de release: release-please, CodeQL security-extended, Dependabot com auto-merge de patches/minors.
+
+Total de tools: 44. Suite: 327+ testes. Cobertura: 80%+.
+
+### Estado atual (v0.5.1)
+44 tools distribuídas em módulos: CNPJ, CPF, NF-e, NFS-e (orientação), SPED, eSocial, tabelas fiscais offline, BCB, importação, Reforma Tributária, CEP/CNAE/IBGE/MEI/Empresa, certidões (orientação), tools agênticas.
+
+Formas de uso: servidor MCP (Claude Desktop, Claude Code, Cursor, VS Code + Continue), SDK Python (FiscalBrasil), CLI standalone, REST API + Web UI demo.
+
+---
+
+## Edição 1 - MCP Jurídico Brasil: consultar processo judicial virou uma tool MCP
+URL: https://news.dehor.com.br/mcp-juridico-brasil/edicao-1/
+Data: 22 de junho de 2026
+
+Como nasceu o servidor MCP que conecta IAs ao DataJud CNJ e aos 91 tribunais brasileiros.
+
+### Fundação: DataJud CNJ
+O CNJ mantém o DataJud - base unificada com cobertura de 91 tribunais (Federal, Estadual, Trabalho, Militar, Eleitoral, Superior). API pública gratuita com chave solicitada no portal CNJ.
+
+### Tools ativas na v0.1.0
+- buscar_processo_por_numero: consulta completa pelo número CNJ unificado
+- listar_movimentacoes: histórico de andamentos com filtro por data e cursor de navegação
+- resumir_andamento: dados do processo com instrução estruturada para o modelo resumir partes, fase atual e próximos passos
+- monitorar_processo: polling com snapshot em memória, retorna flag de atualização e diff de movimentações novas
+- listar_processos_monitorados: lista processos com snapshot salvo na sessão
+- listar_tribunais: 91 siglas suportadas (Portaria CNJ 160/2020)
+- calcular_proximo_prazo: prazo em dias úteis conforme CPC arts. 219, 220 e 224; considera feriados nacionais e estaduais (workalendar), recesso forense (20 dez - 20 jan), fins de semana. Offline.
+
+Resource MCP de snapshot: último estado capturado de um processo monitorado, acessível por clients que suportam resources.
+
+### Módulos com mocks (v0.1.0)
+- comercial/: estrutura para Judit, Escavador, TrackJud (dados enriquecidos além do DataJud) - aguarda credencial real
+- dje/: Domicílio Judicial Eletrônico - aguarda credencial ICP-Brasil; confirmação de leitura de intimação tem efeito jurídico real e inicia contagem de prazo (operação irreversível, opt-in duplo)
+
+### Números da v0.1.0
+7 tools ativas, 2 módulos com mocks, 1 resource MCP, 231 testes, cobertura de 92%. Python 3.10+, MIT, PyPI.
+
+Chave DataJud: https://datajud-wiki.cnj.jus.br/api-publica/acesso/ (gratuita, sem cobrança).
+
+### Roadmap
+- v0.3.x: webhook push de atualizações, persistência em banco e alertas por prazo
+- v0.4.x: intimações via DJe com credencial real (ICP-Brasil), parsing de publicações
+- v1.0.0: suite processual completa com auditoria LGPD e contratos de API estáveis
+
+---
+
+## Sobre o autor
+Nikolas de Hor - desenvolvedor de software em Goiânia, Brasil.
+GitHub: https://github.com/nikolasdehor
+Email: nikolasdehor79@gmail.com
