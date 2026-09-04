@@ -1,0 +1,72 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+---
+
+<html lang="pt-BR">
+  <head>
+    <Head
+      title="Privacidade"
+      description="Quais dados o news.dehor.com.br coleta de fato: formulário de newsletter, preferência de tema e RSS."
+      canonicalURL={new URL('/privacidade', Astro.site)}
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <main>
+      <section class="section" aria-labelledby="privacidade-title">
+        <div class="container container--narrow">
+          <article class="prose">
+            <p>Atualizado em 3 de setembro de 2026</p>
+            <h1 id="privacidade-title">Aviso de privacidade</h1>
+            <p>
+              Este aviso descreve o fluxo real de dados do news.dehor.com.br. Deve passar por
+              revisão humana e jurídica antes de ser tratado como política formal.
+            </p>
+            <h2>Inscrição na newsletter</h2>
+            <p>
+              O formulário de inscrição na página inicial e nas páginas de cada projeto coleta
+              um endereço de e-mail e o(s) projeto(s) escolhido(s) para acompanhar. O envio vai
+              para uma função serverless que encaminha os dados ao Resend, o provedor de
+              e-mail de terceiros usado para gerenciar a audiência de assinantes de cada
+              projeto. Existe um campo oculto usado apenas para filtrar envios automatizados de
+              spam, nunca exibido a quem preenche o formulário.
+            </p>
+            <h2>Limite de tentativas</h2>
+            <p>
+              Para reduzir abuso do formulário, a função do servidor mantém uma contagem
+              temporária, em memória, de envios por endereço IP. Essa contagem não é gravada em
+              banco de dados nem compartilhada com terceiros; existe só na memória da função
+              enquanto ela está em execução.
+            </p>
+            <h2>Preferências locais e fontes</h2>
+            <p>
+              O alternador de tema claro/escuro é salvo no armazenamento local do navegador e
+              nunca sai do seu dispositivo. Todas as fontes são hospedadas junto com os
+              arquivos do próprio site, então ler este site não gera requisição ao Google Fonts
+              nem a nenhum outro serviço de fontes de terceiros. Nenhum script de analytics ou
+              rastreamento roda neste site.
+            </p>
+            <h2>RSS e conteúdo público</h2>
+            <p>
+              Os feeds RSS e cada edição publicada são conteúdo público, sem rastreamento
+              associado à leitura.
+            </p>
+            <h2>Solicitações</h2>
+            <p>
+              Para solicitar acesso, correção ou exclusão do seu e-mail de assinante, escreva
+              para <a href="mailto:nikolasdehor79@gmail.com">nikolasdehor79@gmail.com</a>. Uma
+              solicitação pode exigir confirmação do e-mail cadastrado.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>

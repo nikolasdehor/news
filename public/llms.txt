@@ -1,15 +1,31 @@
 # news.dehor.com.br
 
-> Publicações e diário de bordo dos projetos open source de Nikolas de Hor.
+> Publicações e diário de bordo dos projetos open source de Nikolas de Hor, em Goiânia, Brasil.
 
-## Página pública
+## Quando usar
+
+- Acompanhar atualizações e novidades dos projetos open source MCP Fiscal Brasil e MCP Jurídico Brasil.
+- Encontrar links verificáveis (GitHub, PyPI, documentação) de cada projeto a partir das edições publicadas.
+- Assinar por e-mail as novidades de um projeto específico, sem precisar seguir redes sociais.
+- Obter um resumo legível por máquina do site (este arquivo, [index.md](https://news.dehor.com.br/index.md) e o [sitemap](https://news.dehor.com.br/sitemap-index.xml)).
+
+Não é o site oficial de nenhum dos projetos, nem um produto SaaS com login: é apenas o diário de publicações. Código, documentação e pacotes ficam nos repositórios do GitHub, não aqui.
+
+## Pages
 
 - [Início](https://news.dehor.com.br/): projetos e publicações recentes.
+- [Sobre](https://news.dehor.com.br/sobre) · [About (English)](https://news.dehor.com.br/about)
+- [Contato](https://news.dehor.com.br/contato) · [Contact (English)](https://news.dehor.com.br/contact)
+- [Privacidade](https://news.dehor.com.br/privacidade) · [Privacy (English)](https://news.dehor.com.br/privacy)
 - [Versão Markdown](https://news.dehor.com.br/index.md): conteúdo textual da página inicial.
-- [RSS](https://news.dehor.com.br/rss.xml): feed das publicações.
+- [RSS](https://news.dehor.com.br/rss.xml): feed de todas as publicações.
 - [Sitemap](https://news.dehor.com.br/sitemap-index.xml): URLs públicas do site.
 
 ## Projetos acompanhados
 
-- [MCP Fiscal Brasil](https://news.dehor.com.br/mcp-fiscal-brasil/): atualizações do servidor MCP para dados fiscais brasileiros.
-- [MCP Jurídico Brasil](https://news.dehor.com.br/mcp-juridico-brasil/): atualizações do servidor MCP para consulta processual e prazos.
+- [MCP Fiscal Brasil](https://news.dehor.com.br/mcp-fiscal-brasil/): edições sobre o servidor MCP para dados fiscais brasileiros ([GitHub](https://github.com/DeHor-Labs/mcp-fiscal-brasil)).
+- [MCP Jurídico Brasil](https://news.dehor.com.br/mcp-juridico-brasil/): edições sobre o servidor MCP para consulta processual via DataJud CNJ e cálculo de prazos ([GitHub](https://github.com/DeHor-Labs/mcp-juridico-brasil)).
+
+## Autor
+
+Nikolas de Hor, desenvolvedor em Goiânia, GO, Brasil. Contato: [nikolasdehor79@gmail.com](mailto:nikolasdehor79@gmail.com) · [GitHub](https://github.com/nikolasdehor).

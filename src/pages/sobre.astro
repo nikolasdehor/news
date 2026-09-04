@@ -1,0 +1,54 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+---
+
+<html lang="pt-BR">
+  <head>
+    <Head
+      title="Sobre"
+      description="O que é o news.dehor.com.br, quem publica e quais projetos open source ele acompanha."
+      canonicalURL={new URL('/sobre', Astro.site)}
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <main>
+      <section class="section" aria-labelledby="sobre-title">
+        <div class="container container--narrow">
+          <article class="prose">
+            <h1 id="sobre-title">Sobre o news.dehor.com.br</h1>
+            <p>
+              news.dehor.com.br é o diário de bordo e publicação de Nikolas de Hor, desenvolvedor em Goiânia, GO, Brasil. É um site pessoal e sem fins comerciais, construído com <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a> e publicado na Vercel.
+            </p>
+            <h2>O que é publicado</h2>
+            <p>
+              Cada edição é uma atualização datada sobre um dos projetos open source mantidos
+              na organização DeHor Labs. Não há redação nem conteúdo pago; cada publicação é
+              escrita pelo próprio Nikolas de Hor sobre o seu trabalho.
+            </p>
+            <h2>Projetos acompanhados</h2>
+            <ul>
+              <li>
+                <a href="/mcp-fiscal-brasil/">MCP Fiscal Brasil</a> - servidor MCP (Model Context Protocol) open source para dados fiscais brasileiros, publicado no <a href="https://github.com/DeHor-Labs/mcp-fiscal-brasil" target="_blank" rel="noopener noreferrer">GitHub</a>.
+              </li>
+              <li>
+                <a href="/mcp-juridico-brasil/">MCP Jurídico Brasil</a> - servidor MCP open source para consulta processual via DataJud CNJ, publicado no <a href="https://github.com/DeHor-Labs/mcp-juridico-brasil" target="_blank" rel="noopener noreferrer">GitHub</a>.
+              </li>
+            </ul>
+            <h2>Como acompanhar</h2>
+            <p>
+              É possível se inscrever por e-mail para cada projeto na página inicial, ou usar o <a href="/rss.xml">feed RSS</a> global e o feed próprio de cada projeto. Resumos legíveis por máquina estão em <a href="/index.md">/index.md</a> e <a href="/llms.txt">/llms.txt</a>.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>
