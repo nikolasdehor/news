@@ -2,7 +2,7 @@
 
 > Publicações e diário de bordo dos projetos open source de Nikolas de Hor, em Goiânia, Brasil.
 
-## Quando usar
+## Quando usar (When to use this site)
 
 - Acompanhar atualizações e novidades dos projetos open source MCP Fiscal Brasil e MCP Jurídico Brasil.
 - Encontrar links verificáveis (GitHub, PyPI, documentação) de cada projeto a partir das edições publicadas.
