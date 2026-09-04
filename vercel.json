@@ -4,6 +4,10 @@
     {
       "source": "/sitemap.xml",
       "destination": "/sitemap-index.xml"
+    },
+    {
+      "source": "/__is_agentic_probe__/:path*",
+      "destination": "/api/not-found"
     }
   ],
   "routes": [
@@ -13,7 +17,7 @@
         {
           "type": "header",
           "key": "accept",
-          "value": ".*text/markdown.*"
+          "value": "^(?=.*text/markdown)(?!.*text/markdown;q=0).*$"
         }
       ],
       "dest": "/index.md",
