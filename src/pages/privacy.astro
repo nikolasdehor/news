@@ -1,0 +1,69 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+---
+
+<html lang="en">
+  <head>
+    <Head
+      title="Privacy notice"
+      description="What data news.dehor.com.br actually collects: the newsletter form, local theme preference, and RSS."
+      canonicalURL={new URL('/privacy', Astro.site)}
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <main>
+      <section class="section" aria-labelledby="privacy-title">
+        <div class="container container--narrow">
+          <article class="prose">
+            <p>Updated on September 3, 2026</p>
+            <h1 id="privacy-title">Privacy notice</h1>
+            <p>
+              This notice describes the actual data flow of news.dehor.com.br. It should
+              receive human and legal review before being treated as a formal policy.
+            </p>
+            <h2>Newsletter subscription</h2>
+            <p>
+              The subscription form on the home page and on each project page collects an
+              email address and the project(s) you choose to follow. Submissions go to a
+              serverless function that forwards them to Resend, the third-party email
+              provider used to manage each project's subscriber audience. A hidden field
+              exists purely to filter automated spam submissions and is never shown to
+              visitors.
+            </p>
+            <h2>Rate limiting</h2>
+            <p>
+              To slow down abuse of the subscription form, the server function keeps a
+              short-lived, in-memory count of submissions per IP address. This count is not
+              written to a database and is not shared with anyone; it exists only in the
+              memory of the function while it is running.
+            </p>
+            <h2>Local preferences and fonts</h2>
+            <p>
+              The light/dark theme toggle is stored in your browser's local storage and never
+              leaves your device. All fonts are self-hosted with the site's own assets, so
+              reading this site does not send a request to Google Fonts or any other
+              third-party font service. No analytics or tracking script runs on this site.
+            </p>
+            <h2>RSS and public content</h2>
+            <p>
+              The RSS feeds and every published edition are public content with no tracking
+              attached to reading them.
+            </p>
+            <h2>Requests</h2>
+            <p>
+              To request access, correction, or deletion of your subscriber email, contact <a href="mailto:nikolasdehor79@gmail.com">nikolasdehor79@gmail.com</a>. A request may require confirming the email address on file.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>

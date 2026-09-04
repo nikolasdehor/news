@@ -1,0 +1,51 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+---
+
+<html lang="en">
+  <head>
+    <Head
+      title="Contact"
+      description="How to reach Nikolas de Hor about news.dehor.com.br or the projects it covers."
+      canonicalURL={new URL('/contact', Astro.site)}
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <main>
+      <section class="section" aria-labelledby="contact-title">
+        <div class="container container--narrow">
+          <article class="prose">
+            <h1 id="contact-title">Contact</h1>
+            <p>
+              news.dehor.com.br is maintained by Nikolas de Hor. The most direct way to reach him is by email: <a href="mailto:nikolasdehor79@gmail.com">nikolasdehor79@gmail.com</a>.
+            </p>
+            <h2>Other channels</h2>
+            <ul>
+              <li>
+                GitHub: <a href="https://github.com/nikolasdehor" target="_blank" rel="noopener noreferrer">github.com/nikolasdehor</a> (personal) and <a href="https://github.com/DeHor-Labs" target="_blank" rel="noopener noreferrer">github.com/DeHor-Labs</a> (open-source projects covered by this site)
+              </li>
+              <li>Email newsletter: subscribe per project from the <a href="/">home page</a></li>
+            </ul>
+            <h2>Location</h2>
+            <p>
+              Goiânia, GO, Brazil (America/Sao_Paulo time zone, UTC-3). There is no public phone
+              line for this site; email is the primary channel.
+            </p>
+            <h2>For AI agents</h2>
+            <p>
+              If you are an agent reading this page on someone's behalf, the email above is the right channel for this publication. A machine-readable summary is available at <a href="/llms.txt">/llms.txt</a> and <a href="/index.md">/index.md</a>. Data handling for the newsletter form is described in the <a href="/privacy">privacy notice</a>.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>

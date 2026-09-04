@@ -56,6 +56,35 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
     <link rel="alternate" type="text/markdown" href="/index.md" />
     <link rel="icon" type="image/png" href="/logo-mcp-fiscal.png" />
     <meta name="generator" content={Astro.generator} />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'DEHOR',
+      url: 'https://news.dehor.com.br/',
+      logo: 'https://news.dehor.com.br/favicon.svg',
+      founder: { '@type': 'Person', name: 'Nikolas de Hor' },
+      sameAs: ['https://github.com/nikolasdehor', 'https://github.com/DeHor-Labs'],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        email: 'nikolasdehor79@gmail.com',
+        contactType: 'customer support',
+        availableLanguage: ['pt-BR'],
+      },
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Goiânia',
+        addressRegion: 'GO',
+        addressCountry: 'BR',
+      },
+    })} />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'news.dehor.com.br',
+      url: 'https://news.dehor.com.br/',
+      inLanguage: 'pt-BR',
+      publisher: { '@type': 'Organization', name: 'DEHOR' },
+    })} />
   </head>
   <body>
     <Nav />

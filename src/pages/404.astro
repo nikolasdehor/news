@@ -1,0 +1,44 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+---
+
+<html lang="pt-BR">
+  <head>
+    <Head
+      title="Página não encontrada"
+      description="Esta página não existe em news.dehor.com.br. Veja os links abaixo para encontrar o conteúdo certo."
+    />
+    <meta name="robots" content="noindex" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <main>
+      <section class="section" aria-labelledby="not-found-title">
+        <div class="container container--narrow">
+          <article class="prose">
+            <h1 id="not-found-title">Página não encontrada</h1>
+            <p>
+              O endereço acessado não existe em <strong>news.dehor.com.br</strong>. O link pode
+              estar desatualizado ou o conteúdo pode ter mudado de lugar.
+            </p>
+            <h2>Para onde ir</h2>
+            <ul>
+              <li><a href="/">Página inicial</a> - projetos e publicações recentes</li>
+              <li><a href="/index.md">Versão em markdown da página inicial</a></li>
+              <li><a href="/llms.txt">Mapa do site para agentes de IA (llms.txt)</a></li>
+              <li><a href="/sitemap-index.xml">Sitemap</a></li>
+              <li><a href="/rss.xml">Feed RSS de todas as publicações</a></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>

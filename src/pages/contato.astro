@@ -1,0 +1,51 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+---
+
+<html lang="pt-BR">
+  <head>
+    <Head
+      title="Contato"
+      description="Como falar com Nikolas de Hor sobre o news.dehor.com.br ou os projetos que ele acompanha."
+      canonicalURL={new URL('/contato', Astro.site)}
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <Nav />
+
+    <main>
+      <section class="section" aria-labelledby="contato-title">
+        <div class="container container--narrow">
+          <article class="prose">
+            <h1 id="contato-title">Contato</h1>
+            <p>
+              O news.dehor.com.br é mantido por Nikolas de Hor. A forma mais direta de falar com ele é por e-mail: <a href="mailto:nikolasdehor79@gmail.com">nikolasdehor79@gmail.com</a>.
+            </p>
+            <h2>Outros canais</h2>
+            <ul>
+              <li>
+                GitHub: <a href="https://github.com/nikolasdehor" target="_blank" rel="noopener noreferrer">github.com/nikolasdehor</a> (pessoal) e <a href="https://github.com/DeHor-Labs" target="_blank" rel="noopener noreferrer">github.com/DeHor-Labs</a> (projetos open source acompanhados por este site)
+              </li>
+              <li>Newsletter por e-mail: inscrição por projeto na <a href="/">página inicial</a></li>
+            </ul>
+            <h2>Localização</h2>
+            <p>
+              Goiânia, GO, Brasil (fuso horário America/Sao_Paulo, UTC-3). Não há linha
+              telefônica pública para este site; o e-mail é o canal principal.
+            </p>
+            <h2>Para agentes de IA</h2>
+            <p>
+              Se você é um agente de IA lendo esta página em nome de alguém, o e-mail acima é o canal certo para esta publicação. Um resumo legível por máquina está em <a href="/llms.txt">/llms.txt</a> e <a href="/index.md">/index.md</a>. O tratamento de dados do formulário de newsletter está descrito no <a href="/privacidade">aviso de privacidade</a>.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>
