@@ -23,14 +23,17 @@ export function relevant(pr) {
   if (labelsFor(pr).has('news:include')) return true; // Explicit editorial decision.
   const files = pr.files || [];
   const security = /^(?:security(?:\([^)]+\))?!?:|fix(?:\([^)]+\))?!?:.*(?:vulnerab|CVE-\d|seguran[cç]a|security))/i.test(pr.title);
-  const dependencyFiles = /(?:^|\/)(?:pyproject\.toml|uv\.lock|requirements[^/]*\.txt|package(?:-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|Cargo(?:\.toml|\.lock)|go\.(?:mod|sum))$/;
+  const dependencyFiles = {test: file => ['pyproject.toml', 'uv.lock', 'package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'Cargo.toml', 'Cargo.lock', 'go.mod', 'go.sum'].includes(file.split('/').at(-1)) || /(?:^|\/)requirements[^/]*\.txt$/.test(file)};
   if (security && files.some(file => dependencyFiles.test(file))) return true;
   if (/^(?:feat|fix|perf)\((?:docs?|ci|tests?|style|build|deps|maintenance)\)!?:/i.test(pr.title)) return false;
   if (/\b(?:typo|spelling|formatting|lint|readme|documentation|documentação|comments|comentários)\b/i.test(pr.title)) return false;
   return files.some(file => {
-    const documentation = /(?:^|\/)(?:docs?|tests?|__tests__|examples?|\.github)(?:\/|$)|\.(?:md|mdx|rst|txt|snap)$|(?:^|\/)(?:test_[^/]+|[^/]+\.(?:test|spec)\.[^/]+)$/i;
-    return !documentation.test(file) && !dependencyFiles.test(file) &&
-      /(?:^|\/)(?:src|lib|app|apps|api|packages)(?:\/|$)|\.(?:py|js|mjs|cjs|jsx|ts|tsx|go|rs|java|rb|php|cs|astro|vue|svelte)$/i.test(file);
+    const parts = file.split('/');
+    const documentation = parts.some(part => ['doc', 'docs', 'test', 'tests', '__tests__', 'example', 'examples', '.github'].includes(part.toLowerCase())) ||
+      /\.(md|mdx|rst|txt|snap)$/i.test(file) || /(^|\/)test_[^/]+$/i.test(file) || /\.(test|spec)\.[^/]+$/i.test(file);
+    const codeExtension = new Set(['py','js','mjs','cjs','jsx','ts','tsx','go','rs','java','rb','php','cs','astro','vue','svelte']);
+    const functional = parts.some(part => ['src','lib','app','apps','api','packages'].includes(part)) || codeExtension.has(file.split('.').at(-1).toLowerCase());
+    return !documentation && !dependencyFiles.test(file) && functional;
   });
 }
 export function periodLabel(project, plan) {
@@ -123,13 +126,14 @@ async function collectProject({root, api, now, legacy, project}) {
     .map(post => post.fm.sourceUntil || post.fm.pubDate)
     .sort((a,b) => Date.parse(a)-Date.parse(b)).at(-1);
   // Fetch changed paths only for new candidate PRs. No patches or private commits.
-  const qualifiedPulls = [];
-  for (const pr of pulls) {
-    if (!pr.merged_at || Date.parse(pr.merged_at) <= Date.parse(since) ||
-        Date.parse(pr.merged_at) > now.valueOf() || !candidate(pr)) continue;
+  const candidates = pulls.filter(pr => pr.merged_at && Date.parse(pr.merged_at) > Date.parse(since) &&
+    Date.parse(pr.merged_at) <= now.valueOf() && candidate(pr));
+  // Sequential requests deliberately limit pressure on the public GitHub API.
+  const qualifiedPulls = await candidates.reduce(async (previous, pr) => {
+    const collected = await previous;
     const files = await pages(`repos/${project.repo}/pulls/${pr.number}/files`, api);
-    qualifiedPulls.push({...pr, files:files.map(file => file.filename)});
-  }
+    return [...collected, {...pr, files:files.map(file => file.filename)}];
+  }, Promise.resolve([]));
   const plan = select({project, releases, pulls:qualifiedPulls, posts, legacy, cutoff:now.toISOString()});
   return {project, plan, dir};
 }
