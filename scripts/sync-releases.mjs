@@ -1,308 +1,75 @@
 #!/usr/bin/env node
-/**
- * sync-releases.mjs
- *
- * Verifica releases novos nos projetos monitorados e gera rascunhos de post
- * para o blog dehor.news. Idempotente: tags ja no estado sao ignoradas.
- *
- * Uso:
- *   node scripts/sync-releases.mjs
- *
- * Variaveis de ambiente:
- *   GITHUB_TOKEN  - opcional, so para evitar rate limit da API publica
- *   DRY_RUN       - se "true", imprime o que faria sem escrever nada
- */
-
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(__dirname, '..');
-const DRY_RUN = process.env.DRY_RUN === 'true';
-
-// ---------------------------------------------------------------------------
-// Config: lista de projetos monitorados
-// Para adicionar um novo projeto, inclua uma entrada neste array.
-// ---------------------------------------------------------------------------
-const PROJECTS = [
-  {
-    /** Identificador do repositorio no GitHub (owner/repo) */
-    repo: 'DeHor-Labs/mcp-fiscal-brasil',
-    /** Slug usado no diretorio de posts e no campo `project` do frontmatter */
-    slug: 'mcp-fiscal-brasil',
-    /** Nome de exibicao com capitalizacao correta (siglas, acentos etc.) */
-    displayName: 'MCP Fiscal Brasil',
-    /** Imagem OG padrao do projeto (relativa a /public) */
-    ogImage: '/og/mcp-fiscal-brasil.png',
-    /** Tags base que todo post deste projeto recebe */
-    baseTags: ['mcp', 'python', 'fiscal', 'brasil', 'open-source'],
-    /** Links de referencia do projeto */
-    links: {
-      repo: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
-      docs: 'https://dehor-labs.github.io/mcp-fiscal-brasil/',
-      pypi: 'https://pypi.org/project/mcp-fiscal-brasil/',
-    },
-  },
-  {
-    repo: 'DeHor-Labs/mcp-juridico-brasil',
-    slug: 'mcp-juridico-brasil',
-    displayName: 'MCP Jurídico Brasil',
-    ogImage: '/og/mcp-juridico-brasil.png',
-    baseTags: ['mcp', 'python', 'juridico', 'brasil', 'open-source'],
-    links: {
-      repo: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
-      docs: 'https://dehor-labs.github.io/mcp-juridico-brasil/',
-      pypi: 'https://pypi.org/project/mcp-juridico-brasil/',
-    },
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Caminhos
-// ---------------------------------------------------------------------------
-const STATE_FILE = join(REPO_ROOT, '.github', 'synced-releases.json');
-const POSTS_DIR = join(REPO_ROOT, 'src', 'content', 'posts');
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function log(msg) {
-  console.log(`[sync-releases] ${msg}`);
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { PROJECTS } from './news-projects.mjs';
+export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+export function frontmatter(raw) {
+  const block = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] || '';
+  return Object.fromEntries(block.split('\n').filter(x => x.includes(':')).map(x => { const i=x.indexOf(':'); return [x.slice(0,i).trim(), x.slice(i+1).trim().replace(/^"|"$/g,'')]; }));
 }
-
-function loadState() {
-  if (!existsSync(STATE_FILE)) {
-    return { covered: {} };
-  }
-  return JSON.parse(readFileSync(STATE_FILE, 'utf8'));
+export function relevant(pr) {
+  const labels = (pr.labels || []).map(x=>x.name);
+  if (labels.includes('news:exclude')) return false;
+  if (labels.includes('news:include')) return true;
+  // Corrections, including dependency security fixes, take precedence over noise.
+  if (/^(fix|feat|perf|security)(\(|:)|vulnerab|seguran[cç]a|security/i.test(pr.title)) return true;
+  return !/^(build|chore|ci|docs|test|style|refactor)(\(|:)|^bump /i.test(pr.title) && pr.user?.login !== 'dependabot[bot]';
 }
-
-function saveState(state) {
-  if (DRY_RUN) {
-    log('DRY_RUN: nao gravando estado atualizado.');
-    return;
-  }
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n', 'utf8');
-  log('Estado atualizado gravado em .github/synced-releases.json');
+export async function github(path, fetcher=fetch) {
+  const headers = {'User-Agent':'dehor-news', Accept:'application/vnd.github+json'};
+  if (process.env.GITHUB_TOKEN) headers.Authorization=`Bearer ${process.env.GITHUB_TOKEN}`;
+  const res=await fetcher(`https://api.github.com/${path}`, {headers, signal:AbortSignal.timeout(30000)});
+  if (!res.ok) throw new Error(`GitHub ${res.status}: ${path}; retry after ${res.headers.get('retry-after') || res.headers.get('x-ratelimit-reset') || 'checking Actions logs'}`);
+  return res.json();
 }
-
-/**
- * Converte uma tag de release em slug de post sem colisao.
- * "v0.6.0"     -> "novidades-v0-6-0"
- * "v1.0.0-rc.1"-> "novidades-v1-0-0-rc-1"
- */
-function tagToPostSlug(tag) {
-  const normalized = tag
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return `novidades-${normalized}`;
+export async function pages(path, api=github) {
+  const all=[];
+  for(let page=1;page<=100;page++) { const batch=await api(`${path}${path.includes('?')?'&':'?'}per_page=100&page=${page}`); if(!Array.isArray(batch)) throw new Error('Invalid API list'); all.push(...batch); if(batch.length<100)return all; }
+  throw new Error('Pagination limit; refusing incomplete collection');
 }
-
-/**
- * Escapa aspas duplas para uso seguro em frontmatter YAML entre aspas duplas.
- */
-function yamlStr(str) {
-  if (!str) return '';
-  return str.replace(/"/g, "'").replace(/\r?\n/g, ' ').trim();
+export function select({project, releases, pulls, posts, legacy, cutoff}) {
+  const published=posts.filter(p=>p.fm.draft==='false');
+  const windows=published.map(p=>p.fm.sourceUntil || p.fm.pubDate).filter(Boolean).sort((a,b)=>Date.parse(a)-Date.parse(b));
+  const since=windows.at(-1);
+  if(!since || !Number.isFinite(Date.parse(since)))throw new Error(`Missing published baseline: ${project.slug}`);
+  const covered=new Set(published.flatMap(p=>p.raw.match(/<!-- source-id: ([^ ]+) -->/g)?.map(x=>x.slice(16,-4).trim()) || []));
+  const pending=posts.some(p=>p.fm.draft!=='false');
+  const between=d=>Date.parse(d)>Date.parse(since)&&Date.parse(d)<=Date.parse(cutoff);
+  const events=[...releases.filter(r=>!r.draft&&!r.prerelease&&r.published_at&&between(r.published_at)&&!(legacy[project.slug]||[]).includes(r.tag_name)).map(r=>({id:`${project.repo}:release:${r.id}`,title:r.name||r.tag_name,url:r.html_url,date:r.published_at,kind:'release'})), ...pulls.filter(p=>p.merged_at&&between(p.merged_at)&&relevant(p)).map(p=>({id:`${project.repo}:pr:${p.number}`,title:p.title,url:p.html_url,date:p.merged_at,kind:'merged'}))].filter(e=>!covered.has(e.id)).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+  return {since, cutoff, events, pending};
 }
-
-/**
- * Busca releases publicos (nao-draft, nao-prerelease, com published_at) do GitHub.
- */
-async function fetchReleases(repo) {
-  const headers = { 'User-Agent': 'dehor-news/sync-releases' };
-  if (process.env.GITHUB_TOKEN) {
-    headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
-  }
-
-  const releases = [];
-  let page = 1;
-
-  while (true) {
-    const url = `https://api.github.com/repos/${repo}/releases?per_page=100&page=${page}`;
-    const res = await fetch(url, { headers });
-
-    if (!res.ok) {
-      throw new Error(`GitHub API ${res.status} para ${repo}: ${await res.text()}`);
-    }
-
-    const batch = await res.json();
-    if (!Array.isArray(batch) || batch.length === 0) break;
-
-    for (const r of batch) {
-      if (r.draft || r.prerelease || !r.published_at) continue;
-      releases.push(r);
-    }
-
-    if (batch.length < 100) break;
-    page++;
-  }
-
-  return releases;
+export function render(project, plan) {
+  const fmt=d=>new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}).format(new Date(d));
+  const rows=kind=>plan.events.filter(e=>e.kind===kind).map(e=>`- [${e.title.replace(/[\[\]\r\n]/g,' ')}](${e.url}) — ${fmt(e.date)}.\n<!-- source-id: ${e.id} -->`).join('\n');
+  return `---\ntitle: ${JSON.stringify(`Resumo semanal — ${project.displayName}`)}\ndescription: "Atualizações públicas desde a última edição: releases e mudanças mergeadas para revisão."\npubDate: ${plan.cutoff}\nsourceSince: ${plan.since}\nsourceUntil: ${plan.cutoff}\nproject: "${project.slug}"\ntags: ["open-source", "resumo-semanal"]\ndraft: true\n---\n\nEste resumo reúne registros públicos do [${project.displayName}](https://github.com/${project.repo}) no intervalo **${fmt(plan.since)} (exclusivo) a ${fmt(plan.cutoff)} (inclusivo)**, horário de São Paulo. A primeira coleta após uma pausa recupera o período desde a última edição publicada.\n\n## Releases públicas\n\n${rows('release') || 'Não houve uma nova release pública neste intervalo.'}\n\n## Mudanças mergeadas\n\nAs PRs abaixo foram integradas ao repositório. Isso não confirma disponibilidade em uma versão publicada; confira as notas de release antes de atualizar. Os títulos são registros das PRs, sem promessa adicional de resultado.\n\n${rows('merged') || 'Não foram identificadas mudanças mergeadas relevantes neste intervalo.'}\n\nManutenção rotineira e atualizações automáticas de dependências foram omitidas; correções de segurança permanecem na seleção.\n\nAbraço de Goiânia.\n\n— Nikolas de Hor\n`;
 }
-
-/**
- * Gera o conteudo completo do arquivo .md do rascunho de post.
- */
-function generateDraft(release, project) {
-  const tag = release.tag_name;
-  const pubDateIso = release.published_at.slice(0, 10);
-
-  const titleProject = project.displayName ?? project.slug
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-
-  const title = `Novidades na ${tag} - ${titleProject}`;
-  const description = `O que mudou na versão ${tag.replace(/^v/, '')} do ${titleProject}: funcionalidades novas, correções e melhorias de infraestrutura.`;
-
-  const tags = [...project.baseTags];
-
-  const majorMinor = tag.match(/^v?(\d+)\.(\d+)/);
-  if (majorMinor) {
-    tags.push(`v${majorMinor[1]}`);
-  }
-
-  const releaseBody = (release.body || '_Sem notas detalhadas para esta versão._').trim();
-
-  return `---
-title: "${yamlStr(title)}"
-description: "${yamlStr(description)}"
-pubDate: ${pubDateIso}T12:00:00-03:00
-project: "${project.slug}"
-tags: [${tags.map((t) => `"${t}"`).join(', ')}]
-ogImage: "${project.ogImage}"
-draft: true
----
-
-<!-- RASCUNHO AUTO-GERADO em ${new Date().toISOString().slice(0, 10)} a partir do release ${tag}. Revisar antes de publicar: ajustar tom, completar seções, mudar draft para false e remover este comentário. -->
-
-A versão **${tag}** do [${titleProject}](${project.links.repo}) foi publicada em ${pubDateIso}. Confira abaixo o que mudou.
-
----
-
-## O que mudou na ${tag}
-
-${releaseBody}
-
----
-
-## Como instalar ou atualizar
-
-\`\`\`bash
-# Via uvx (sem instalação permanente)
-uvx ${project.slug}
-
-# Via pip
-pip install --upgrade ${project.slug}
-\`\`\`
-
----
-
-## Links
-
-- **Repositório**: ${project.links.repo}
-${project.links.docs ? `- **Documentação**: ${project.links.docs}\n` : ''}\
-${project.links.pypi ? `- **PyPI**: ${project.links.pypi}\n` : ''}\
-- **Release no GitHub**: ${release.html_url}
-- **CHANGELOG completo**: ${project.links.repo}/blob/main/CHANGELOG.md
-
----
-
-Abraço de Goiânia.
-
-- Nikolas de Hor
-`;
-}
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
-
-async function main() {
-  log(`Iniciando sincronizacao${DRY_RUN ? ' (DRY_RUN)' : ''}...`);
-
-  const state = loadState();
-  if (!state.covered) state.covered = {};
-
-  /** @type {{ project: string, tag: string, filePath: string }[]} */
-  const generated = [];
-
-  for (const project of PROJECTS) {
-    log(`Verificando ${project.repo}...`);
-
-    const covered = new Set(state.covered[project.slug] ?? []);
-    let releases;
-
+export async function run({root=ROOT, api=github, now=new Date(), dry=false, projects=PROJECTS}={}) {
+  const report={attemptAt:now.toISOString(), lastSuccessfulCollection:null, status:'collecting', projects:[], errors:[]};
+  const plans=[]; const legacy=JSON.parse(readFileSync(join(root,'.github/synced-releases.json'))).covered;
+  for(const project of projects.filter(p=>p.enabled)) {
     try {
-      releases = await fetchReleases(project.repo);
-    } catch (err) {
-      log(`ERRO ao buscar releases de ${project.repo}: ${err.message}`);
-      continue;
-    }
-
-    log(`  ${releases.length} release(s) publicado(s) encontrado(s).`);
-
-    for (const release of releases) {
-      const tag = release.tag_name;
-
-      if (covered.has(tag)) {
-        log(`  [ja coberto] ${tag}`);
-        continue;
-      }
-
-      const postSlug = tagToPostSlug(tag);
-      const postDir = join(POSTS_DIR, project.slug);
-      const postFile = join(postDir, `${postSlug}.md`);
-
-      // Idempotencia: se o arquivo ja existe, apenas registra no estado
-      if (existsSync(postFile)) {
-        log(`  [arquivo ja existe] ${tag} -> ${postSlug}.md - adicionando ao estado.`);
-        covered.add(tag);
-        continue;
-      }
-
-      log(`  [novo] ${tag} -> ${postSlug}.md`);
-
-      if (!DRY_RUN) {
-        mkdirSync(postDir, { recursive: true });
-        writeFileSync(postFile, generateDraft(release, project), 'utf8');
-      } else {
-        log(`  DRY_RUN: geraria ${postFile}`);
-      }
-
-      covered.add(tag);
-      generated.push({ project: project.slug, tag, filePath: postFile });
-    }
-
-    state.covered[project.slug] = [...covered].sort();
+      const repo=await api(`repos/${project.repo}`); if(repo.private!==false)throw new Error('Public repository required');
+      const releases=await pages(`repos/${project.repo}/releases`,api); const pulls=await pages(`repos/${project.repo}/pulls?state=closed&sort=updated&direction=desc`,api);
+      const dir=join(root,'src/content/posts',project.slug);
+      const posts=readdirSync(dir).filter(f=>f.endsWith('.md')).map(f=>{const raw=readFileSync(join(dir,f),'utf8');return {raw,fm:frontmatter(raw)};});
+      const plan=select({project,releases,pulls,posts,legacy,cutoff:now.toISOString()}); plans.push({project,plan,dir});
+      report.projects.push({project:project.slug,...plan});
+    } catch(e) {report.errors.push({project:project.slug,error:e.message});}
   }
-
-  saveState(state);
-
-  if (generated.length === 0) {
-    log('Nenhum rascunho novo gerado. Tudo ja coberto.');
-    // Exit 0: o workflow nao abre PR
-    process.exit(0);
+  // Atomic collection: partial failure must never write content or advance a watermark.
+  report.status=report.errors.length?'failed':'success';
+  if(!report.errors.length) report.lastSuccessfulCollection=report.attemptAt;
+  mkdirSync(join(root,'.sync'),{recursive:true}); writeFileSync(join(root,'.sync/report.json'),JSON.stringify(report,null,2)+'\n');
+  if(report.errors.length)throw new Error(`Collection incomplete: ${report.errors.map(x=>x.project+': '+x.error).join('; ')}`);
+  let generated=0;
+  for(const {project,plan,dir} of plans) {
+    if(plan.pending){console.log(`Pending draft for ${project.slug}; preserving review content`);continue;}
+    if(!plan.events.length || Date.parse(plan.cutoff)-Date.parse(plan.since)<7*86400000)continue;
+    const file=join(dir,`resumo-${plan.cutoff.slice(0,10)}.md`);
+    if(!dry&&!existsSync(file)){writeFileSync(file,render(project,plan));generated++;}
+    else if(dry)generated++;
   }
-
-  log(`${generated.length} rascunho(s) gerado(s):`);
-  for (const g of generated) {
-    log(`  ${g.project} ${g.tag} -> ${g.filePath}`);
-  }
-
-  const summary = generated.map((g) => `${g.project} ${g.tag}`).join(', ');
-  // O workflow captura esta linha para montar o titulo do PR
-  console.log(`GENERATED_SUMMARY=${summary}`);
-
-  // Exit 2: o workflow abre PR com os rascunhos gerados
-  process.exit(2);
+  return generated?2:0;
 }
-
-main().catch((err) => {
-  console.error('[sync-releases] Erro fatal:', err);
-  process.exit(1);
-});
+if(process.argv[1]===fileURLToPath(import.meta.url))run({dry:process.env.DRY_RUN==='true'}).then(code=>{console.log('GENERATED_SUMMARY=resumo semanal de projetos publicos');process.exitCode=code;}).catch(e=>{console.error(e.message);process.exitCode=1;});

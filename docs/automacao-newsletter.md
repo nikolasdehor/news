@@ -1,154 +1,54 @@
-# Automação de rascunhos de newsletter
+# Resumo semanal com revisão
 
-Este repositório tem um workflow que monitora releases de projetos open source e
-gera rascunhos de post automaticamente, sem flood e sem duplicata.
+O workflow sync-releases executa segunda-feira às 09:00 em America/Sao_Paulo
+(12:00 UTC), e aceita execução manual. Somente prepara PR **draft**; não publica
+nem envia emails. A newsletter existente continua acionada por push de conteúdo
+na main. Merge de post com draft:false publica e pode enviar aos inscritos: essa
+é uma decisão explícita posterior, fora da autorização para preparar rascunhos.
 
----
+## Coleta e seleção
 
-## Como funciona
+`scripts/news-projects.mjs` habilita apenas Fiscal e Jurídico. As opções Agro,
+Transcreve e Verboo estão desabilitadas e não mudam assinaturas/audiências.
+Repositórios devem retornar private:false antes de qualquer coleta. Não usamos
+commits, repositórios privados, dados de clientes, nem serviços pagos.
 
-1. O workflow `.github/workflows/sync-releases.yml` roda a cada 6 horas (cron)
-   e pode ser disparado manualmente pelo botão "Run workflow" no GitHub Actions.
+Paginação completa de releases públicas (sem prereleases) e PRs fechadas/mergeadas.
+Janela: (sourceUntil da última edição publicada, instante de coleta], usando
+pubDate como baseline para edições antigas. A primeira retomada recupera todo o
+intervalo desde junho; depois resume semanalmente. Datas no texto usam São Paulo.
+Releases e PRs são seções distintas: merge não comprova disponibilidade em pacote.
 
-2. O script `scripts/sync-releases.mjs` consulta a API pública do GitHub para
-   cada projeto monitorado e verifica quais tags de release ainda não foram cobertas.
+Correções, funcionalidades, performance e segurança são selecionadas; dependabot,
+chore/build/ci/docs/test/style/refactor rotineiros são omitidos. Labels news:include
+ou news:exclude permitem decisão editorial explícita. Revisores devem confirmar
+os títulos públicos antes de publicar; o gerador não inventa resultados.
 
-3. O arquivo `.github/synced-releases.json` é o estado anti-flood: toda tag já
-   coberta por um post (manual ou automático) fica registrada ali. O script ignora
-   essas tags em todas as rodadas futuras.
+## Deduplicação e revisão
 
-4. Para cada tag nova encontrada, o script gera um arquivo `.md` em
-   `src/content/posts/<slug>/novidades-<versão>.md` com:
-   - Frontmatter válido para o schema Astro (`title`, `description`, `pubDate`,
-     `project`, `tags`, `ogImage`, `draft: true`)
-   - Um comentário HTML no topo avisando que é rascunho a revisar
-   - Corpo com parágrafo de abertura, seção "O que mudou" com as release notes
-     originais e seção de links (repo, docs, PyPI, release no GitHub)
+IDs estáveis repo:release:ID e repo:pr:NUMBER ficam em comentários source-id.
+Só draft:false conta como publicado. sourceSince/sourceUntil registram o corte.
+O estado legado de tags é somente leitura (baseline das edições existentes).
+Nenhuma geração marca publicação. Um rascunho no projeto bloqueia outro; uma PR
+aberta na branch auto/rascunho-releases bloqueia substituição e preserva edições.
+Após rejeitar/fechar uma PR, as mesmas fontes continuam elegíveis na próxima coleta.
+Após merge de draft:true, revise esse rascunho existente para publicar; ele bloqueia
+novas edições até decisão editorial. Sem novidades não há commit de status/deploy.
 
-5. Se algum rascunho foi gerado, o workflow abre (ou atualiza, via force-push)
-   um PR na branch estável `auto/rascunho-releases` com label `rascunho-auto`.
-   Usar um nome de branch fixo garante que `peter-evans/create-pull-request`
-   atualize o PR existente em vez de abrir um novo a cada rodada do cron.
+## Observabilidade
 
-   **Importante:** o estado atualizado (`.github/synced-releases.json`) vai no
-   commit do PR, mas a branch de trabalho é `auto/rascunho-releases`, não
-   `main`. Enquanto o PR não for mergeado, a próxima rodada do cron faz
-   force-push na mesma branch e atualiza o PR existente - sem flood de PRs.
-   Após o merge, o estado em `main` passa a cobrir as tags geradas e o script
-   não as processa novamente.
+.sync/report.json (ignorado pelo Git) registra tentativa, projetos, janela,
+fontes, erros e sucesso. Actions guarda o relatório como artifact por 90 dias.
+A última tentativa corresponde ao run mais recente; a última coleta bem-sucedida
+é o artifact do último run com status success. Falha parcial ou API/rate limit
+termina exit 1 e não grava conteúdo nem avança corte; consultar logs e retry-after
+ou reset da API. Run bloqueado por PR pendente aparece no summary e não afirma
+coleta bem-sucedida. GitHub pode atrasar cron; ele não garante horário exato.
 
-6. Se não há releases novos, o workflow encerra sem abrir PR.
+## Validação segura
 
----
-
-## Fluxo de revisão (PR para publicação)
-
-```
-release no GitHub
-      |
-      v
-workflow detecta tag nova
-      |
-      v
-script gera .md com draft: true
-      |
-      v
-PR aberto com label rascunho-auto
-      |
-      v
-você revisa: ajusta tom, completa seções, muda draft: false
-      |
-      v
-merge na main -> deploy automático publica o post
-```
-
----
-
-## Como adicionar um novo projeto monitorado
-
-Edite a constante `PROJECTS` em `scripts/sync-releases.mjs`:
-
-```js
-const PROJECTS = [
-  {
-    repo: 'DeHor-Labs/mcp-fiscal-brasil',
-    slug: 'mcp-fiscal-brasil',
-    ogImage: '/og/mcp-fiscal-brasil.png',
-    baseTags: ['mcp', 'python', 'fiscal', 'brasil', 'open-source'],
-    links: {
-      repo: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
-      docs: 'https://dehor-labs.github.io/mcp-fiscal-brasil/',
-      pypi: 'https://pypi.org/project/mcp-fiscal-brasil/',
-    },
-  },
-  // Novo projeto:
-  {
-    repo: 'DeHor-Labs/mcp-juridico-brasil',
-    slug: 'mcp-juridico-brasil',
-    ogImage: '/og/mcp-juridico-brasil.png',
-    baseTags: ['mcp', 'python', 'juridico', 'brasil', 'open-source'],
-    links: {
-      repo: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
-      docs: 'https://dehor-labs.github.io/mcp-juridico-brasil/',
-      pypi: 'https://pypi.org/project/mcp-juridico-brasil/',
-    },
-  },
-];
-```
-
-Depois, pré-popule o estado com as tags já existentes para evitar flood inicial:
-
-```bash
-# Listar tags publicadas do novo projeto
-gh api repos/DeHor-Labs/mcp-juridico-brasil/releases \
-  --jq '[.[] | select(.draft==false and .prerelease==false and .published_at!=null) | .tag_name]'
-
-# Adicionar manualmente em .github/synced-releases.json:
-# "mcp-juridico-brasil": ["v0.1.0", "v0.2.0", ...]
-```
-
----
-
-## Convenção de slug dos posts
-
-| Tag do release | Slug do arquivo |
-|----------------|-----------------|
-| `v0.6.0`       | `novidades-v0-6-0.md` |
-| `v1.0.0-rc.1`  | `novidades-v1-0-0-rc-1.md` |
-| `v2.0.0`       | `novidades-v2-0-0.md` |
-
-A convenção `novidades-<versão>` garante que:
-- Posts manuais de retrospectiva (ex: `edicao-1.md`) não colidem com posts automáticos
-- Rodar o workflow duas vezes para a mesma tag não gera duplicata (arquivo já existe)
-- O slug é legível na URL e deriva diretamente da tag sem ambiguidade
-
----
-
-## Teste local
-
-```bash
-# Simular sem escrever nada (DRY_RUN)
-DRY_RUN=true node scripts/sync-releases.mjs
-
-# Rodar de verdade (usa GITHUB_TOKEN se disponível)
-GITHUB_TOKEN=$(gh auth token) node scripts/sync-releases.mjs
-```
-
-Exit codes do script:
-- `0` - nada novo, tudo já coberto
-- `2` - rascunhos gerados (o workflow abre PR neste caso)
-- `1` - erro fatal
-
----
-
-## Permissões necessárias no repositório
-
-O workflow usa o `GITHUB_TOKEN` nativo (sem PAT cross-conta) porque:
-
-- A leitura dos releases de `DeHor-Labs/mcp-fiscal-brasil` é feita pela API pública
-  do GitHub (repositório público, sem autenticação obrigatória)
-- A criação de branch, commit e PR é feita no próprio repo `nikolasdehor/news`,
-  onde o `GITHUB_TOKEN` tem permissão por padrão
-
-A opção **Allow GitHub Actions to create and approve pull requests** já está
-habilitada neste repositório (configurada via `gh api` no deploy inicial).
+`node --test tests/*.test.mjs` usa fixtures e não acessa inscritos.
+`npm run build` valida Astro. Não há comandos lint/typecheck no projeto original.
+`DRY_RUN=true node scripts/sync-releases.mjs` consulta apenas GitHub público;
+não grava posts (grava relatório diagnóstico local). Exit 0: sem novo arquivo;
+2: rascunhos; 1: falha acionável. Nunca testar send-newsletter contra inscritos.
