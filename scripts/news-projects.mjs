@@ -13,8 +13,7 @@ export const PROJECTS = [
     baseTags: ['mcp', 'python', 'fiscal', 'brasil', 'open-source'],
     /** Links de referencia do projeto */
     links: {
-      enabled: true,
-    repo: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
+      repo: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
       docs: 'https://dehor-labs.github.io/mcp-fiscal-brasil/',
       pypi: 'https://pypi.org/project/mcp-fiscal-brasil/',
     },
@@ -27,8 +26,7 @@ export const PROJECTS = [
     ogImage: '/og/mcp-juridico-brasil.png',
     baseTags: ['mcp', 'python', 'juridico', 'brasil', 'open-source'],
     links: {
-      enabled: true,
-    repo: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
+      repo: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
       docs: 'https://dehor-labs.github.io/mcp-juridico-brasil/',
       pypi: 'https://pypi.org/project/mcp-juridico-brasil/',
     },
