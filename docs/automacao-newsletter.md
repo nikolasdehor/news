@@ -17,10 +17,16 @@ Paginação completa de releases públicas (sem prereleases) e PRs fechadas/merg
 Janela: (sourceUntil da última edição publicada, instante de coleta], usando
 pubDate como baseline para edições antigas. A primeira retomada recupera todo o
 intervalo desde junho; depois resume semanalmente. Datas no texto usam São Paulo.
-Releases e PRs são seções distintas: merge não comprova disponibilidade em pacote.
+Releases estáveis e PRs são seções distintas: merge não comprova disponibilidade em pacote.
+Pré-releases de teste não qualificam como lançamento estável e ficam contadas no relatório.
+Janela maior que oito dias recebe título de retrospectiva; demais títulos indicam datas reais.
+Nenhuma ausência de novidade cria edição vazia. O cron define a cadência semanal;
+não há espera artificial de sete dias depois de uma edição manual fora da segunda-feira.
 
-Correções, funcionalidades, performance e segurança são selecionadas; dependabot,
-chore/build/ci/docs/test/style/refactor rotineiros são omitidos. Labels news:include
+PRs precisam de título convencional feat/fix/perf/security e paths funcionais alterados.
+Docs/testes/CI e manifests de dependências isolados não qualificam; correções de
+segurança explicitadas no título com manifests alterados qualificam. Dependabot e
+títulos genéricos não têm fallback permissivo. Labels news:include
 ou news:exclude permitem decisão editorial explícita. Revisores devem confirmar
 os títulos públicos antes de publicar; o gerador não inventa resultados.
 
@@ -52,3 +58,17 @@ coleta bem-sucedida. GitHub pode atrasar cron; ele não garante horário exato.
 `DRY_RUN=true node scripts/sync-releases.mjs` consulta apenas GitHub público;
 não grava posts (grava relatório diagnóstico local). Exit 0: sem novo arquivo;
 2: rascunhos; 1: falha acionável. Nunca testar send-newsletter contra inscritos.
+
+## Correção editorial sem reenvio
+
+O envio deduplica pela chave projeto/slug em .github/sent-broadcasts.json; editar
+título/corpo não muda essa chave. Manter slugs, IDs e estado sent intactos. Estado
+sent ausente ou inválido agora interrompe o script em vez de presumir lista vazia.
+O teste de segurança usa o script real com fetch bloqueado e quatro slugs enviados:
+correções dos posts30/09 produzem zero chamadas e nenhuma escrita de estado.
+O workflow atual ainda é acionado por push de conteúdo na main, mas este conjunto
+de correções resulta em no-op de envio; nenhum dispatch é necessário.
+
+index.md e llms-full.txt passam a ser gerados dos posts publicados a cada build,
+sem rascunhos, cidade antiga ou snapshots de features apresentados como estado
+atual. llms.txt permanece experimental e aponta para fontes e páginas públicas.

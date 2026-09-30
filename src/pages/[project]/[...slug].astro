@@ -28,11 +28,17 @@ const canonicalURL = new URL(`/${project}/${slug}/`, Astro.site);
 // Nomes de display por projeto
 const nomesProjeto: Record<string, string> = {
   'mcp-fiscal-brasil': 'MCP Fiscal Brasil',
+  'mcp-juridico-brasil': 'MCP Jurídico Brasil',
 };
 const nomeProjeto = nomesProjeto[project] ?? project;
+const reposProjeto: Record<string, string> = {
+  'mcp-fiscal-brasil': 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
+  'mcp-juridico-brasil': 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
+};
+const repoProjeto = reposProjeto[project] ?? 'https://github.com/nikolasdehor';
 
 // Numero da edicao a partir do slug (ex: "edicao-1" -> "01")
-const matchNum = slug.match(/(\d+)$/);
+const matchNum = slug.match(/^edicao-(\d+)$/);
 const numEdicao = matchNum ? String(parseInt(matchNum[1], 10)).padStart(2, '0') : null;
 
 // Estimativa de tempo de leitura
@@ -107,10 +113,10 @@ const minutos = Math.max(1, Math.round(textoEstimado / palavrasPorMinuto));
         <div class="post-footer__note">
           <p>
             Gostou desta edição? Acompanhe o projeto no GitHub: <a
-              href="https://github.com/nikolasdehor"
+              href={repoProjeto}
               target="_blank"
               rel="noopener noreferrer"
-            >github.com/nikolasdehor</a>
+            >{repoProjeto.replace('https://', '')}</a>
           </p>
         </div>
       </div>

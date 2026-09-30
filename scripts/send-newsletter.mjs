@@ -455,7 +455,10 @@ async function main() {
   try {
     state = JSON.parse(readFileSync(STATE_FILE, 'utf8'));
   } catch {
-    state = { sent: [], lastUpdated: new Date().toISOString() };
+    throw new Error('Estado sent indisponível ou inválido: envio interrompido para evitar duplicações.');
+  }
+  if (!Array.isArray(state.sent) || state.sent.some(key => typeof key !== 'string')) {
+    throw new Error('Estado sent sem lista válida: envio interrompido para evitar duplicações.');
   }
   const sentSet = new Set(state.sent);
 
