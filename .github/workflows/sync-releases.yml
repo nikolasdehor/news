@@ -2,8 +2,8 @@ name: Sincronizar releases e gerar rascunhos
 
 on:
   schedule:
-    # Roda a cada 6 horas (00:00, 06:00, 12:00, 18:00 UTC)
-    - cron: '0 */6 * * *'
+    # Segunda-feira 09:00 America/Sao_Paulo (12:00 UTC)
+    - cron: '0 12 * * 1'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -38,8 +38,20 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Preservar PR pendente
+        id: pending
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:auto/rascunho-releases" --jq 'length')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          if [ "$count" != "0" ]; then
+            echo "Rascunho pendente: revisão preservada, coleta adiada." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Executar sync-releases.mjs
         id: sync
+        if: steps.pending.outputs.count == '0'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
@@ -68,11 +80,21 @@ jobs:
             exit $exit_code
           fi
 
+      - name: Registrar coleta sem commits de status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sync-report
+          path: .sync/report.json
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Abrir PR com rascunhos
         if: steps.sync.outputs.has_new == 'true' && github.event.inputs.dry_run != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
           branch: auto/rascunho-releases
           base: main
           commit-message: |
@@ -83,23 +105,24 @@ jobs:
           body: |
             ## Rascunhos gerados automaticamente
 
-            Este PR foi aberto pelo workflow `sync-releases` apos detectar releases
-            novos nos projetos monitorados.
+            Este PR foi aberto pelo workflow `sync-releases` apos detectar releases e PRs mergeadas
+            relevantes nos projetos monitorados.
 
-            **Releases cobertos:** `${{ steps.sync.outputs.summary }}`
+            **Coleta:** `${{ steps.sync.outputs.summary }}`
 
             ### Fluxo de revisão
 
             1. Revise cada arquivo `.md` em `src/content/posts/`
             2. Ajuste título, descrição, tags e tom conforme necessário
             3. Altere `draft: true` para `draft: false` quando o post estiver pronto
-            4. Aprove e faça merge - o deploy para produção é automático
+            4. Obtenha decisão explícita para publicar e enviar antes do merge.
 
-            ### Anti-flood
+            ### Estado e aprovação
 
-            O arquivo `.github/synced-releases.json` foi atualizado neste commit com as
-            novas tags. Rodar o workflow novamente nao vai gerar duplicatas.
+            Nenhum estado de publicação é avançado pelo rascunho. IDs e janela são
+            derivados somente de posts publicados. PR aberta bloqueia substituição.
+            Merge com draft:false publica no site E DISPARA NEWSLETTER; requer decisão
+            explícita de publicação e envio. Este workflow somente prepara rascunhos.
           labels: rascunho-auto
           add-paths: |
             src/content/posts/**
-            .github/synced-releases.json
