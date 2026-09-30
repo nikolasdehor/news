@@ -354,7 +354,7 @@ function buildEmailHtml({ title, description, project, slug, bodyHtml }) {
               </p>
               <p style="margin: 0 0 16px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #AAAAAA; line-height: 1.6;">
                 <a href="${BLOG_BASE}/unsubscribe" target="_blank" style="color: #AAAAAA; text-decoration: underline;">Descadastrar</a>
-                &nbsp;&middot;&nbsp; Nikolas de Hor &nbsp;&middot;&nbsp; Goiânia, GO, Brasil
+                &nbsp;&middot;&nbsp; Nikolas de Hor
               </p>
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 <tr>

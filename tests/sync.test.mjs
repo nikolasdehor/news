@@ -19,3 +19,12 @@ test('no sending capabilities; workflows draft and pending protection',()=>{cons
 test('dry-run creates report only and short windows do not generate',async()=>{const root=fixture();assert.equal(await run({root,api,projects:[project],dry:true}),2);assert.equal(readdirSync(join(root,'src/content/posts/demo')).length,1);assert.equal(await run({root,api,projects:[project],now:new Date('2026-06-23T12:00:00Z')}),0);});
 test('draft does not advance cutoff; rejected draft stays eligible',()=>{const draft={raw:'<!-- source-id: public/demo:pr:3 -->',fm:{draft:'true',sourceUntil:args.cutoff,pubDate:args.cutoff}};const plan=select({...args,pulls:[pr],posts:[post,draft]});assert.equal(plan.since,post.fm.pubDate);assert.equal(plan.pending,true);assert.equal(plan.events.length,1);assert.equal(select({...args,pulls:[pr],posts:[post]}).events.length,1);});
 test('prerelease, draft release, unmerged and after cutoff omitted',()=>{assert.equal(select({...args,pulls:[{...pr,merged_at:null},{...pr,merged_at:'2026-10-01T00:00:00Z'}],releases:[{id:1,draft:true,published_at:pr.merged_at},{id:2,prerelease:true,published_at:pr.merged_at}]}).events.length,0);});
+test('build guard distinguishes published content from exposed draft', async()=>{
+  const {spawnSync}=await import('node:child_process');
+  const root=fixture();
+  const output=join(root,'dist/demo/first');mkdirSync(output,{recursive:true});writeFileSync(join(output,'index.html'),'published');
+  const checker=new URL('../scripts/check-draft-build.mjs',import.meta.url).pathname;
+  assert.equal(spawnSync(process.execPath,[checker],{cwd:root}).status,0);
+  writeFileSync(join(root,'src/content/posts/demo/first.md'),'---\ndraft: true\n---\n');
+  assert.equal(spawnSync(process.execPath,[checker],{cwd:root}).status,1);
+});

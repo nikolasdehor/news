@@ -19,8 +19,4 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Garantir que rascunhos não estejam no build
-        run: |
-          if find dist -name 'resumo-2026-09-30*' | grep -q .; then
-            echo 'Rascunho exposto no build' >&2
-            exit 1
-          fi
+        run: node scripts/check-draft-build.mjs
