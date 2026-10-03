@@ -1,0 +1,15 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'
+
+/
+  Vary: Accept
+  Link: </sitemap.xml>; rel="sitemap"; type="application/xml", </index.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"; type="text/plain"
+
+/index.md
+  Content-Type: text/markdown; charset=utf-8
+  Vary: Accept
+  Link: <https://news.dehor.com.br/>; rel="canonical"; type="text/html"
