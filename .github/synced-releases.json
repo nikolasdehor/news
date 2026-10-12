@@ -1,5 +1,5 @@
 {
-  "_comment": "Tags ja cobertas pela edicao-1.md (ou versoes anteriores ao monitoramento automatico). A Action ignora qualquer tag listada aqui.",
+  "_comment": "Tags já cobertas (edicao-1 ou anteriores ao monitoramento) e, em since, a baseline de projetos novos sem edição publicada. A Action ignora tags listadas e só considera eventos posteriores à baseline.",
   "covered": {
     "mcp-fiscal-brasil": [
       "v0.1.0",
@@ -16,6 +16,70 @@
     ],
     "mcp-juridico-brasil": [
       "v0.1.0"
-    ]
+    ],
+    "mcp-agro-brasil": [
+      "v0.5.0",
+      "v0.4.0"
+    ],
+    "semtree": [
+      "v0.1.0",
+      "v0.1.0",
+      "v0.1.0"
+    ],
+    "visual-eyes": [
+      "v1.0.0"
+    ],
+    "transcreve-ai": [
+      "v1.0.0"
+    ],
+    "openparty": [],
+    "shieldcode": [
+      "v1.0.0"
+    ],
+    "agent-capability-router": [],
+    "agent-stack": [],
+    "claude-orchestration": [],
+    "verboo-bridge": [
+      "v2.0.0",
+      "v1.4.8",
+      "v1.4.7",
+      "v1.4.6",
+      "v1.4.5",
+      "v1.4.4",
+      "v1.4.3",
+      "v1.4.2",
+      "v1.4.1",
+      "v1.3.0",
+      "v1.2.0",
+      "v1.1.0",
+      "v1.0.4",
+      "v1.0.3"
+    ],
+    "free-models-monitor": [],
+    "linkedin-cli": [],
+    "teams-cli": [],
+    "saboria": [],
+    "caderno-de-campo": [],
+    "equoterapia": [],
+    "germinavision": []
+  },
+  "since": {
+    "mcp-agro-brasil": "2026-10-12T04:36:40Z",
+    "semtree": "2026-10-12T04:36:40Z",
+    "visual-eyes": "2026-10-12T04:36:40Z",
+    "transcreve-ai": "2026-10-12T04:36:40Z",
+    "openparty": "2026-10-12T04:36:40Z",
+    "shieldcode": "2026-10-12T04:36:40Z",
+    "agent-capability-router": "2026-10-12T04:36:40Z",
+    "agent-stack": "2026-10-12T04:36:40Z",
+    "claude-orchestration": "2026-10-12T04:36:40Z",
+    "verboo-bridge": "2026-10-12T04:36:40Z",
+    "free-models-monitor": "2026-10-12T04:36:40Z",
+    "linkedin-cli": "2026-10-12T04:36:40Z",
+    "teams-cli": "2026-10-12T04:36:40Z",
+    "saboria": "2026-10-12T04:36:40Z",
+    "caderno-de-campo": "2026-10-12T04:36:40Z",
+    "equoterapia": "2026-10-12T04:36:40Z",
+    "germinavision": "2026-10-12T04:36:40Z"
   }
 }

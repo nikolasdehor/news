@@ -4,26 +4,30 @@ import Head from '../components/Head.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import SubscribeForm from '../components/SubscribeForm.astro';
+import ProjectItem from '../components/ProjectItem.astro';
+import { PROJETOS, CATEGORIAS, nomeDoProjeto } from '../lib/projetos';
 import '../styles/global.css';
 
 const todos = await getCollection('posts', ({ data }) => !data.draft);
 
-// Agrupa por projeto
-const porProjeto = todos.reduce((acc: Record<string, typeof todos>, post) => {
-  const proj = post.data.project;
-  if (!acc[proj]) acc[proj] = [];
-  acc[proj].push(post);
+const contagem = todos.reduce((acc: Record<string, number>, post) => {
+  acc[post.data.project] = (acc[post.data.project] ?? 0) + 1;
   return acc;
 }, {});
 
-const projetos = Object.keys(porProjeto).sort();
+// Catálogo agrupado por categoria, destaques primeiro
+const grupos = CATEGORIAS.map((cat) => ({
+  ...cat,
+  itens: PROJETOS.filter((p) => p.categoria === cat.id)
+    .sort((a, b) => Number(b.destaque) - Number(a.destaque)),
+})).filter((g) => g.itens.length > 0);
 
 // Posts recentes (todos, ordenados por data, max 10)
 const recentes = [...todos]
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 10);
 
-const siteDescription = 'Novidades e diário de bordo dos projetos open source de Nikolas de Hor - Goiânia, Brasil.';
+const siteDescription = 'Portfólio, novidades e diário de bordo dos projetos de Nikolas de Hor: open source, produtos, dados públicos e For6 Solutions.';
 
 // Projetos disponíveis para inscricao
 const projetosSubscribe = [
@@ -31,19 +35,6 @@ const projetosSubscribe = [
   { slug: 'mcp-juridico-brasil', label: 'MCP Jurídico Brasil' },
 ];
 
-// Metadados de projetos
-const metaProjetos: Record<string, { nome: string; desc: string; github: string }> = {
-  'mcp-fiscal-brasil': {
-    nome: 'MCP Fiscal Brasil',
-    desc: 'Servidor MCP com 44 tools para dados fiscais brasileiros - CNPJ, NF-e, SPED, BCB e Reforma Tributaria. Sem API key obrigatoria.',
-    github: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
-  },
-  'mcp-juridico-brasil': {
-    nome: 'MCP Jurídico Brasil',
-    desc: 'Servidor MCP para consulta processual via DataJud CNJ - 91 tribunais, cálculo de prazos e monitoramento de processos. Python, MIT.',
-    github: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
-  },
-};
 ---
 
 <html lang="pt-BR">
@@ -72,8 +63,8 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
       },
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Goiânia',
-        addressRegion: 'GO',
+        addressLocality: 'Itajubá',
+        addressRegion: 'MG',
         addressCountry: 'BR',
       },
     })} />
@@ -92,43 +83,17 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero__inner">
-        <p class="hero__eyebrow">Open Source &middot; Goiânia, Brasil</p>
+        <p class="hero__eyebrow">Portfólio &middot; Itajubá, Brasil</p>
         <h1 class="hero__title" id="hero-title">
-          Novidades open source<br />de Nikolas de Hor
+          Projetos e novidades<br />de Nikolas de Hor
         </h1>
         <p class="hero__subtitle">
-          Projetos e descobertas de um dev de Goiânia - dados fiscais, automação e ferramentas para devs brasileiros.
+          Open source, produtos, dados públicos, trabalhos da For6 Solutions e projetos acadêmicos, com um diário de bordo semanal.
         </p>
       </div>
     </section>
 
     <main>
-      <!-- Projetos -->
-      <section class="section" aria-labelledby="projetos-titulo">
-        <div class="container">
-          <h2 class="section-label" id="projetos-titulo">Projetos</h2>
-          <div>
-            {projetos.map((proj) => {
-              const meta = metaProjetos[proj];
-              const count = porProjeto[proj].length;
-              return (
-                <a href={`/${proj}/`} class="project-item">
-                  <div class="project-item__body">
-                    <p class="project-item__name">{meta?.nome ?? proj}</p>
-                    {meta?.desc && (
-                      <p class="project-item__desc">{meta.desc}</p>
-                    )}
-                  </div>
-                  <span class="project-item__arrow" aria-hidden="true">
-                    {count} {count === 1 ? 'edição' : 'edições'} &rarr;
-                  </span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       <!-- Posts recentes -->
       <section class="section" aria-labelledby="recentes-titulo">
         <div class="container">
@@ -137,8 +102,7 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
             {recentes.map((post) => {
               const [project, ...restParts] = post.id.split('/');
               const slug = restParts.join('/');
-              const metaProj = metaProjetos[project];
-              return (
+                            return (
                 <article class="post-item">
                   <div class="post-item__meta">
                     <time datetime={post.data.pubDate.toISOString()}>
@@ -150,7 +114,7 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
                       })}
                     </time>
                     <span class="post-item__meta-dot" aria-hidden="true">&middot;</span>
-                    <a href={`/${project}/`}>{metaProj?.nome ?? project}</a>
+                    <a href={`/${project}/`}>{nomeDoProjeto(project)}</a>
                   </div>
                   <h3>
                     <a href={`/${project}/${slug}/`} class="post-item__title">
@@ -162,6 +126,25 @@ const metaProjetos: Record<string, { nome: string; desc: string; github: string 
               );
             })}
           </div>
+        </div>
+      </section>
+      <!-- Portfólio -->
+      <section class="section" aria-labelledby="projetos-titulo">
+        <div class="container">
+          <h2 class="section-label" id="projetos-titulo">Projetos</h2>
+          <nav class="categoria-nav" aria-label="Categorias de projetos">
+            {grupos.map((g) => (
+              <a href={`#${g.id}`} class="badge">{g.nome} &middot; {g.itens.length}</a>
+            ))}
+          </nav>
+          {grupos.map((g) => (
+            <div class="categoria" id={g.id}>
+              <h3 class="categoria__titulo">{g.nome}</h3>
+              <div>
+                {g.itens.map((p) => <ProjectItem projeto={p} posts={contagem[p.slug] ?? 0} />)}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </main>

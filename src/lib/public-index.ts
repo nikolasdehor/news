@@ -1,4 +1,19 @@
 import type { CollectionEntry } from 'astro:content';
+import { PROJETOS, CATEGORIAS, SEMANA, linksDoProjeto } from './projetos';
+
+const SITE = 'https://news.dehor.com.br';
+
+function projetosMarkdown() {
+  return CATEGORIAS.map((cat) => {
+    const itens = PROJETOS.filter((p) => p.categoria === cat.id);
+    if (!itens.length) return '';
+    const linhas = itens.map((p) => {
+      const fontes = linksDoProjeto(p).map((l) => `[${l.rotulo}](${l.url})`).join(' · ');
+      return `- [${p.nome}](${SITE}/${p.slug}/) (${p.status}${p.visibilidade === 'privado' ? ', privado' : ''})${fontes ? ' · ' + fontes : ''}\n  ${p.descricao}`;
+    });
+    return `### ${cat.nome}\n\n${linhas.join('\n')}`;
+  }).filter(Boolean).join('\n\n');
+}
 
 export function publicIndex(posts: CollectionEntry<'posts'>[]) {
   const published = posts.filter(post => !post.data.draft)
@@ -12,12 +27,15 @@ lang: pt-BR
 
 # news.dehor.com.br
 
-Publicações verificáveis sobre projetos open source acompanhados por Nikolas de Hor. Mudanças mergeadas e versões lançadas são identificadas separadamente. A coleta é automática; a publicação tem revisão humana.
+Portfólio e publicações verificáveis sobre os projetos de Nikolas de Hor: open source, produtos, dados públicos, For6 Solutions e projetos acadêmicos. Mudanças mergeadas e versões lançadas são identificadas separadamente. Projetos privados aparecem só em alto nível, sem código nem detalhes internos.
 
 ## Projetos e fontes
 
-- [MCP Fiscal Brasil](https://news.dehor.com.br/mcp-fiscal-brasil/) · [GitHub](https://github.com/DeHor-Labs/mcp-fiscal-brasil) · [PyPI](https://pypi.org/project/mcp-fiscal-brasil/) · [Documentação](https://dehor-labs.github.io/mcp-fiscal-brasil/)
-- [MCP Jurídico Brasil](https://news.dehor.com.br/mcp-juridico-brasil/) · [GitHub](https://github.com/DeHor-Labs/mcp-juridico-brasil) · [PyPI](https://pypi.org/project/mcp-juridico-brasil/)
+${projetosMarkdown()}
+
+## Diário da semana
+
+- [${SEMANA.nome}](${SITE}/${SEMANA.slug}/): ${SEMANA.descricao}
 
 ## Publicações
 

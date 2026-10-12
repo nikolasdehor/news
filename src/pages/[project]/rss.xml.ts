@@ -1,10 +1,11 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
+import { PROJETOS, SEMANA, nomeDoProjeto } from '../../lib/projetos';
 
 export async function getStaticPaths() {
   const todos = await getCollection('posts', ({ data }) => !data.draft);
-  const projetos = [...new Set(todos.map((p) => p.data.project))];
+  const projetos = [...new Set([...PROJETOS.map((p) => p.slug), SEMANA.slug, ...todos.map((p) => p.data.project)])];
   return projetos.map((project) => ({ params: { project } }));
 }
 
@@ -18,10 +19,7 @@ export async function GET(context: APIContext) {
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
   );
 
-  const nomesProjeto: Record<string, string> = {
-    'mcp-fiscal-brasil': 'MCP Fiscal Brasil',
-  };
-  const nomeProjeto = nomesProjeto[project] ?? project;
+  const nomeProjeto = nomeDoProjeto(project);
 
   return rss({
     title: `${nomeProjeto} - news.dehor.com.br`,

@@ -11,7 +11,7 @@ export async function GET(context: APIContext) {
 
   return rss({
     title: 'news.dehor.com.br - Nikolas de Hor',
-    description: 'Novidades e diário de bordo dos projetos open source de Nikolas de Hor.',
+    description: 'Novidades e diário de bordo dos projetos de Nikolas de Hor.',
     site: context.site!,
     items: sorted.map((post) => {
       const [project, ...restParts] = post.id.split('/');

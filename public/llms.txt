@@ -1,11 +1,12 @@
 # news.dehor.com.br
 
-> Publicações verificáveis sobre projetos open source acompanhados por Nikolas de Hor. A coleta é automática; a publicação tem revisão humana.
+> Portfólio e publicações verificáveis sobre os projetos de Nikolas de Hor: open source, produtos, dados públicos, For6 Solutions e projetos acadêmicos. Projetos privados aparecem só em alto nível.
 
 ## Conteúdo público
 
 - [Índice de publicações em Markdown](https://news.dehor.com.br/index.md): gerado a partir dos posts publicados, sem rascunhos.
-- [Índice ampliado](https://news.dehor.com.br/llms-full.txt): projetos, fontes e resumo das publicações.
+- [Índice ampliado](https://news.dehor.com.br/llms-full.txt): catálogo completo de projetos por categoria, fontes e resumo das publicações.
+- [Diário da semana](https://news.dehor.com.br/semana/): resumo semanal de atividade de todos os projetos.
 - [MCP Fiscal Brasil](https://news.dehor.com.br/mcp-fiscal-brasil/): [repositório público](https://github.com/DeHor-Labs/mcp-fiscal-brasil).
 - [MCP Jurídico Brasil](https://news.dehor.com.br/mcp-juridico-brasil/): [repositório público](https://github.com/DeHor-Labs/mcp-juridico-brasil).
 - [RSS](https://news.dehor.com.br/rss.xml)
