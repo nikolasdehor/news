@@ -288,6 +288,27 @@ function loadCatalogo(dry) {
   return JSON.parse(readFileSync(join(ROOT, 'src/data/projetos.json'), 'utf8'));
 }
 
+/** Reprovado nunca sai do Mac: o repo é público, branch ou PR já vazaria o texto. */
+function guardarReprovado(week, content, problemas) {
+  const local = join(homedir(), 'Library', 'Logs', `news-semana-${week.year}-${week.week}-REPROVADO.md`);
+  writeFileSync(local, content);
+  problemas.forEach(p => console.error(`[digest] problema: ${p}`));
+  console.error(`[digest] revisão reprovou; rascunho salvo só local em ${local}. Nada publicado.`);
+  return 3;
+}
+
+function nomesProibidos(projetos) {
+  const norm = t => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return projetos.filter(p => p.privado).flatMap(p => {
+    // Nome curto conta sempre, exceto se é o próprio nome/slug público ou palavra genérica curta (ex.: "site").
+    const publico = new Set([p.slug, p.nome].filter(Boolean).map(norm));
+    return p.repos.flatMap(r => {
+      const curto = r.split('/').pop();
+      return curto.length >= 5 && !publico.has(norm(curto)) ? [r, curto] : [r];
+    });
+  });
+}
+
 export async function main({ dry = false, now = new Date() } = {}) {
   const catalogo = loadCatalogo(dry);
   if (!catalogo) {
@@ -311,13 +332,7 @@ export async function main({ dry = false, now = new Date() } = {}) {
   const week = isoWeek(new Date(now - DAY)); // segunda cobre a semana ISO que terminou no domingo
   const content = postFile(week, periodo, body, now);
 
-  const forbidden = projetos.filter(p => p.privado).flatMap(p => p.repos.flatMap(r => {
-    // Nome curto conta sempre, exceto se é o próprio nome/slug público ou palavra genérica curta (ex.: "site").
-    const curto = r.split('/').pop();
-    const norm = t => t.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const publico = [p.slug, p.nome].filter(Boolean).map(norm);
-    return curto.length >= 5 && !publico.includes(norm(curto)) ? [r, curto] : [r];
-  }));
+  const forbidden = nomesProibidos(projetos);
   const review = parseReview(claude(reviewerPrompt(body, ativos.filter(p => p.privado).map(p => p.nome))));
   const problemas = [...review.problemas, ...scanSecrets(body, forbidden)];
   const ok = review.ok && problemas.length === 0;
@@ -330,15 +345,7 @@ export async function main({ dry = false, now = new Date() } = {}) {
     problemas.forEach(p => console.log(`- ${p}`));
     return 0;
   }
-  if (!ok) {
-    // Reprovado nunca sai do Mac: o repo é público, branch ou PR já vazaria o texto.
-    const local = join(homedir(), 'Library/Logs', `news-semana-${week.year}-${week.week}-REPROVADO.md`);
-    writeFileSync(local, content);
-    problemas.forEach(p => console.error(`[digest] problema: ${p}`));
-    console.error(`[digest] revisão reprovou; rascunho salvo só local em ${local}. Nada publicado.`);
-    spawnSync('terminal-notifier', ['-title', 'news.dehor', '-message', 'Diário da semana reprovado na revisão de privacidade; veja o log.'], { stdio: 'ignore' });
-    return 3;
-  }
+  if (!ok) return guardarReprovado(week, content, problemas);
   const title = `Diário da semana ${week.week} de ${week.year}`;
   return publish({ rel, content, branch: `auto/semana-${week.week}`, title });
 }
