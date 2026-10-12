@@ -1,0 +1,343 @@
+/* ============================================================
+   Leitura: cabeçalho de post, prosa e rodapé do post.
+   Corpo em Geist 18px / 1.7 numa coluna de ~66 caracteres;
+   Lora só no título do artigo e nas citações.
+   ============================================================ */
+
+.post-header {
+  padding: var(--space-16) 0 var(--space-8);
+}
+
+.post-header__inner {
+  max-width: var(--width-reading);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 40px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-bottom: var(--space-6);
+  transition: color var(--duration-fast) ease;
+}
+
+.breadcrumb:hover {
+  color: var(--color-accent);
+}
+
+.post-edition-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-accent);
+  margin-bottom: var(--space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.post-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-8);
+}
+
+.post-byline-bar {
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.post-byline-bar__dot {
+  color: var(--color-text-faint);
+}
+
+.post-byline-bar .badge {
+  margin-left: auto;
+}
+
+.post-byline-bar__dot:has(+ .badge) {
+  display: none;
+}
+
+/* ============================================================
+   Prosa
+   ============================================================ */
+
+.prose {
+  max-width: var(--width-reading);
+  margin-inline: auto;
+  padding: var(--space-8) var(--gutter) var(--space-20);
+  color: var(--color-text-body);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose h1 {
+  font-family: var(--font-serif);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-8);
+}
+
+.prose h2 {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin-top: var(--space-16);
+  margin-bottom: var(--space-4);
+  scroll-margin-top: var(--space-20);
+}
+
+.prose h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  color: var(--color-text-primary);
+  margin-top: var(--space-10);
+  margin-bottom: var(--space-3);
+}
+
+.prose h4 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-2);
+}
+
+.prose p {
+  margin-bottom: var(--space-6);
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+.prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.prose strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--color-code-bg);
+  color: var(--color-code-text);
+  padding: 0.12em 0.36em;
+  border-radius: var(--radius-sm);
+}
+
+.prose pre {
+  background: var(--color-pre-bg);
+  color: var(--color-pre-text);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  margin: var(--space-8) 0;
+  font-size: var(--text-sm);
+  line-height: 1.65;
+}
+
+.prose pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* Citação: voz editorial em Lora, separada por um fio de 1px */
+.prose blockquote {
+  margin: var(--space-8) 0;
+  padding-left: var(--space-6);
+  border-left: 1px solid var(--color-border);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1875rem;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+}
+
+.prose blockquote p {
+  margin-bottom: var(--space-3);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.prose li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.prose li::marker {
+  color: var(--color-text-muted);
+}
+
+.prose ol li::marker {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+}
+
+.prose hr {
+  border: none;
+  width: 4rem;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-12) auto;
+}
+
+.prose img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  margin: var(--space-8) 0;
+  outline: 1px solid rgb(255 255 255 / 0.1);
+  outline-offset: -1px;
+}
+
+[data-theme="light"] .prose img {
+  outline-color: rgb(0 0 0 / 0.1);
+}
+
+/* Tabelas em post */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-8) 0;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  overflow-x: auto;
+  display: block;
+}
+
+.prose th {
+  font-weight: 600;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.prose td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: top;
+  color: var(--color-text-body);
+}
+
+.prose tr:last-child td {
+  border-bottom: none;
+}
+
+/* ============================================================
+   Rodapé do post
+   ============================================================ */
+
+.post-footer {
+  max-width: var(--width-reading);
+  margin-inline: auto;
+  padding: var(--space-8) var(--gutter) var(--space-16);
+  border-top: 1px solid var(--color-border);
+}
+
+.post-footer__nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.post-footer__note {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+  line-height: var(--leading-relaxed);
+}
+
+.post-footer__note a {
+  color: var(--color-accent);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--duration-fast) ease;
+}
+
+.post-footer__note a:hover {
+  color: var(--color-accent-hover);
+}
+
+@media (max-width: 640px) {
+  .post-header {
+    padding: var(--space-8) 0 var(--space-4);
+  }
+
+  .post-byline-bar .badge {
+    margin-left: 0;
+  }
+
+  .post-footer__nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .prose {
+    font-size: 1.0625rem;
+  }
+}

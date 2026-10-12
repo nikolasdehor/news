@@ -1,0 +1,41 @@
+---
+/**
+ * Destaque da home: ficha maior, com categoria, descrição completa,
+ * stack e links públicos. O nome é um link esticado sobre o cartão;
+ * os links externos ficam numa camada acima dele.
+ */
+import { CATEGORIAS, linksDoProjeto, type Projeto } from '../lib/projetos';
+
+interface Props {
+  projeto: Projeto;
+  posts: number;
+}
+
+const { projeto: p, posts } = Astro.props;
+const links = linksDoProjeto(p);
+const categoria = CATEGORIAS.find((c) => c.id === p.categoria)?.nome;
+---
+
+<article class="destaque">
+  <p class="destaque__meta">
+    {categoria}
+    {p.visibilidade === 'privado' && <span class="marca">código privado</span>}
+    {p.status !== 'ativo' && <span class="marca">{p.status}</span>}
+  </p>
+  <h3 class="destaque__nome">
+    <a href={`/${p.slug}/`} class="esticado">{p.nome}</a>
+  </h3>
+  <p class="destaque__desc">{p.descricao}</p>
+  <div class="destaque__rodape">
+    <ul class="stack" role="list" aria-label="Stack">
+      {p.stack.map((s) => <li>{s}</li>)}
+    </ul>
+    <div class="destaque__links">
+      {links.map((l) => (
+        <a href={l.url} target="_blank" rel="noopener noreferrer" class="link-external"
+           aria-label={`${l.rotulo} de ${p.nome} (abre em nova aba)`}>{l.rotulo}</a>
+      ))}
+      {posts > 0 && <span class="destaque__edicoes">{posts} {posts === 1 ? 'edição' : 'edições'}</span>}
+    </div>
+  </div>
+</article>

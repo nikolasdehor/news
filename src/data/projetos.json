@@ -22,7 +22,7 @@
     "descricao": "Servidor MCP para consulta processual via DataJud CNJ: 91 tribunais, cálculo de prazos e monitoramento de processos.",
     "stack": ["Python", "MCP"],
     "status": "ativo",
-    "destaque": true
+    "destaque": false
   },
   {
     "slug": "mcp-agro-brasil",
@@ -221,7 +221,7 @@
     "descricao": "Assistente de programação no terminal: lê o projeto, propõe mudanças, edita arquivos e roda comandos, com o modelo que você escolher. Binários e instalador são públicos.",
     "stack": ["Go", "CLI", "IA"],
     "status": "ativo",
-    "destaque": true
+    "destaque": false
   },
   {
     "slug": "lucralink",
@@ -417,7 +417,7 @@
     "descricao": "Cruza candidatos de 2026 com as empresas em que são sócios e com os contratos públicos e emendas que essas empresas receberam, a partir de bases federais abertas.",
     "stack": ["Python", "Dados abertos"],
     "status": "ativo",
-    "destaque": true
+    "destaque": false
   },
   {
     "slug": "patrimonio-tse",
@@ -428,7 +428,7 @@
     "descricao": "Compara o patrimônio declarado ao TSE por candidatos em 11 eleições (2006 a 2026), corrigido pela inflação.",
     "stack": ["Python", "Dados abertos"],
     "status": "ativo",
-    "destaque": true
+    "destaque": false
   },
   {
     "slug": "licitacoes",

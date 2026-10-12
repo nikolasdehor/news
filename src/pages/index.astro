@@ -5,7 +5,9 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import SubscribeForm from '../components/SubscribeForm.astro';
 import ProjectItem from '../components/ProjectItem.astro';
-import { PROJETOS, CATEGORIAS, nomeDoProjeto } from '../lib/projetos';
+import FeaturedProject from '../components/FeaturedProject.astro';
+import Robo from '../components/Robo.astro';
+import { PROJETOS, CATEGORIAS, SEMANA, nomeDoProjeto } from '../lib/projetos';
 import '../styles/global.css';
 
 const todos = await getCollection('posts', ({ data }) => !data.draft);
@@ -15,17 +17,35 @@ const contagem = todos.reduce((acc: Record<string, number>, post) => {
   return acc;
 }, {});
 
-// Catálogo agrupado por categoria, destaques primeiro
+// Catálogo agrupado por categoria, destaques primeiro dentro do grupo
 const grupos = CATEGORIAS.map((cat) => ({
   ...cat,
   itens: PROJETOS.filter((p) => p.categoria === cat.id)
     .sort((a, b) => Number(b.destaque) - Number(a.destaque)),
 })).filter((g) => g.itens.length > 0);
 
-// Posts recentes (todos, ordenados por data, max 10)
+const destaques = PROJETOS.filter((p) => p.destaque);
+
+// Números reais, calculados no build a partir do catálogo e das publicações
+const numeros = [
+  { valor: PROJETOS.length, rotulo: 'projetos' },
+  { valor: PROJETOS.filter((p) => p.categoria === 'open-source').length, rotulo: 'open source' },
+  { valor: PROJETOS.filter((p) => p.visibilidade === 'publico').length, rotulo: 'com código público' },
+  { valor: todos.length, rotulo: todos.length === 1 ? 'edição publicada' : 'edições publicadas' },
+];
+
+// Posts recentes (todos, ordenados por data, max 6)
 const recentes = [...todos]
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 10);
+  .slice(0, 6);
+const [principal, ...demais] = recentes;
+
+const dataCurta = (d: Date) =>
+  d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Sao_Paulo' });
+const caminhoDoPost = (id: string) => {
+  const [project, ...resto] = id.split('/');
+  return { project, href: `/${project}/${resto.join('/')}/` };
+};
 
 const siteDescription = 'Portfólio, novidades e diário de bordo dos projetos de Nikolas de Hor: open source, produtos, dados públicos e For6 Solutions.';
 
@@ -80,71 +100,146 @@ const projetosSubscribe = [
   <body>
     <Nav />
 
-    <!-- Hero -->
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero__inner">
-        <p class="hero__eyebrow">Portfólio &middot; Itajubá, Brasil</p>
-        <h1 class="hero__title" id="hero-title">
-          Projetos e novidades<br />de Nikolas de Hor
-        </h1>
-        <p class="hero__subtitle">
-          Open source, produtos, dados públicos, trabalhos da For6 Solutions e projetos acadêmicos, com um diário de bordo semanal.
-        </p>
-      </div>
-    </section>
-
     <main>
-      <!-- Posts recentes -->
-      <section class="section" aria-labelledby="recentes-titulo">
-        <div class="container">
-          <h2 class="section-label" id="recentes-titulo">Publicações recentes</h2>
-          <div class="posts-list">
-            {recentes.map((post) => {
-              const [project, ...restParts] = post.id.split('/');
-              const slug = restParts.join('/');
-                            return (
-                <article class="post-item">
-                  <div class="post-item__meta">
-                    <time datetime={post.data.pubDate.toISOString()}>
-                      {post.data.pubDate.toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        timeZone: 'America/Sao_Paulo',
-                      })}
-                    </time>
-                    <span class="post-item__meta-dot" aria-hidden="true">&middot;</span>
-                    <a href={`/${project}/`}>{nomeDoProjeto(project)}</a>
-                  </div>
-                  <h3>
-                    <a href={`/${project}/${slug}/`} class="post-item__title">
-                      {post.data.title}
-                    </a>
-                  </h3>
-                  <p class="post-item__excerpt">{post.data.description}</p>
-                </article>
-              );
-            })}
+      <!-- Hero: quem é, o que faz, números reais e o mapa dos projetos -->
+      <section class="intro" aria-labelledby="intro-titulo">
+        <div class="wide intro__grid">
+          <div class="intro__texto">
+            <div class="intro__nome">
+              <h1 class="intro__titulo" id="intro-titulo">Nikolas de Hor</h1>
+              <Robo />
+            </div>
+            <p class="intro__lead">
+              Construo servidores MCP, produtos e painéis de dados públicos, quase sempre para um problema
+              brasileiro: fisco, campo, saúde e transparência. Daqui de Itajubá (MG), com um diário de bordo semanal.
+            </p>
+            <div class="intro__acoes">
+              <a href="#projetos" class="botao botao--primario">Ver os projetos</a>
+              <a href={`/${SEMANA.slug}/`} class="botao">Diário da semana</a>
+            </div>
+          </div>
+
+          <div class="painel">
+            <dl class="numeros">
+              {numeros.map((n) => (
+                <div class="numeros__item">
+                  <dt>{n.rotulo}</dt>
+                  <dd>{n.valor}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <!-- Mapa: um quadrado por projeto, agrupado por categoria. Visual; o conteúdo acessível está no catálogo. -->
+            <div class="mapa" aria-hidden="true">
+              {grupos.map((g) => (
+                <div class="mapa__linha">
+                  <span class="mapa__rotulo">{g.nome}</span>
+                  <span class="mapa__celulas">
+                    {g.itens.map((p, i) => (
+                      <a
+                        href={`/${p.slug}/`}
+                        tabindex="-1"
+                        title={p.nome}
+                        class={`mapa__celula mapa__celula--${p.destaque ? 'destaque' : p.status}`}
+                        style={`--i:${i}`}
+                      ></a>
+                    ))}
+                  </span>
+                  <span class="mapa__qtd">{g.itens.length}</span>
+                </div>
+              ))}
+            </div>
+            <p class="mapa__legenda" aria-hidden="true">
+              <span><i class="mapa__celula mapa__celula--destaque"></i>destaque</span>
+              <span><i class="mapa__celula mapa__celula--ativo"></i>ativo</span>
+              <span><i class="mapa__celula mapa__celula--pausado"></i>pausado</span>
+            </p>
           </div>
         </div>
       </section>
-      <!-- Portfólio -->
-      <section class="section" aria-labelledby="projetos-titulo">
-        <div class="container">
-          <h2 class="section-label" id="projetos-titulo">Projetos</h2>
-          <nav class="categoria-nav" aria-label="Categorias de projetos">
-            {grupos.map((g) => (
-              <a href={`#${g.id}`} class="badge">{g.nome} &middot; {g.itens.length}</a>
-            ))}
-          </nav>
+
+      <!-- Destaques -->
+      <section class="bloco" aria-labelledby="destaques-titulo">
+        <div class="wide">
+          <h2 class="bloco__titulo" id="destaques-titulo">Em destaque</h2>
+          <div class="destaques">
+            {destaques.map((p) => <FeaturedProject projeto={p} posts={contagem[p.slug] ?? 0} />)}
+          </div>
+        </div>
+      </section>
+
+      <!-- Catálogo completo com filtro por categoria (funciona como âncoras sem JS) -->
+      <section class="bloco catalogo" id="projetos" aria-labelledby="projetos-titulo" data-filtro="todos">
+        <div class="wide">
+          <div class="catalogo__topo">
+            <h2 class="bloco__titulo" id="projetos-titulo">Todos os projetos <span class="bloco__qtd">{PROJETOS.length}</span></h2>
+            <nav class="filtro" aria-label="Filtrar projetos por categoria">
+              <a href="#projetos" class="filtro__opcao" data-categoria="todos" aria-current="true">
+                Todos <span class="filtro__qtd">{PROJETOS.length}</span>
+              </a>
+              {grupos.map((g) => (
+                <a href={`#${g.id}`} class="filtro__opcao" data-categoria={g.id}>
+                  {g.nome} <span class="filtro__qtd">{g.itens.length}</span>
+                </a>
+              ))}
+            </nav>
+            <p class="visually-hidden" role="status" id="filtro-status"></p>
+          </div>
+
           {grupos.map((g) => (
-            <div class="categoria" id={g.id}>
-              <h3 class="categoria__titulo">{g.nome}</h3>
-              <div>
-                {g.itens.map((p) => <ProjectItem projeto={p} posts={contagem[p.slug] ?? 0} />)}
-              </div>
+            <div class="grupo" id={g.id} data-categoria={g.id}>
+              <h3 class="grupo__titulo">{g.nome} <span class="grupo__qtd">{g.itens.length}</span></h3>
+              <ul class="grade" role="list">
+                {g.itens.map((p) => (
+                  <li><ProjectItem projeto={p} posts={contagem[p.slug] ?? 0} /></li>
+                ))}
+              </ul>
             </div>
           ))}
+        </div>
+      </section>
+
+      <!-- Diário de bordo: edições recentes -->
+      <section class="bloco" aria-labelledby="diario-titulo">
+        <div class="wide diario">
+          <div class="diario__cabeca">
+            <h2 class="bloco__titulo" id="diario-titulo">Diário de bordo</h2>
+            <p class="diario__sub">
+              Versões lançadas e mudanças relevantes, projeto a projeto.{' '}
+              <a href={`/${SEMANA.slug}/`}>Resumo da semana</a> ou <a href="/rss.xml">assine o RSS</a>.
+            </p>
+          </div>
+
+          {principal && (() => {
+            const { project, href } = caminhoDoPost(principal.id);
+            return (
+              <article class="diario__principal">
+                <p class="diario__meta">
+                  <time datetime={principal.data.pubDate.toISOString()}>{dataCurta(principal.data.pubDate)}</time>
+                  <a href={`/${project}/`}>{nomeDoProjeto(project)}</a>
+                </p>
+                <h3 class="diario__titulo"><a href={href}>{principal.data.title}</a></h3>
+                <p class="diario__resumo">{principal.data.description}</p>
+              </article>
+            );
+          })()}
+
+          {demais.length > 0 && (
+            <ol class="diario__lista" role="list">
+              {demais.map((post) => {
+                const { project, href } = caminhoDoPost(post.id);
+                return (
+                  <li class="diario__item">
+                    <time datetime={post.data.pubDate.toISOString()}>{dataCurta(post.data.pubDate)}</time>
+                    <div>
+                      <a class="diario__item-titulo" href={href}>{post.data.title}</a>
+                      <span class="diario__item-projeto">{nomeDoProjeto(project)}</span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </div>
       </section>
     </main>
@@ -156,5 +251,52 @@ const projetosSubscribe = [
     />
 
     <Footer />
+
+    <script>
+      // Filtro do catálogo: melhora progressiva sobre os links de âncora.
+      const secao = document.querySelector<HTMLElement>('.catalogo');
+      const opcoes = secao ? [...secao.querySelectorAll<HTMLAnchorElement>('.filtro__opcao')] : [];
+      const grupos = secao ? [...secao.querySelectorAll<HTMLElement>('.grupo')] : [];
+      const status = document.getElementById('filtro-status');
+
+      function aplicar(categoria: string) {
+        if (!secao) return;
+        const valida = opcoes.some((o) => o.dataset.categoria === categoria) ? categoria : 'todos';
+        secao.dataset.filtro = valida;
+        let total = 0;
+        grupos.forEach((g) => {
+          const mostra = valida === 'todos' || g.dataset.categoria === valida;
+          g.hidden = !mostra;
+          if (mostra) total += g.querySelectorAll('li').length;
+        });
+        opcoes.forEach((o) => {
+          if (o.dataset.categoria === valida) o.setAttribute('aria-current', 'true');
+          else o.removeAttribute('aria-current');
+        });
+        if (status) status.textContent = `Mostrando ${total} ${total === 1 ? 'projeto' : 'projetos'}`;
+      }
+
+      opcoes.forEach((o) =>
+        o.addEventListener('click', (e) => {
+          e.preventDefault();
+          const categoria = o.dataset.categoria ?? 'todos';
+          aplicar(categoria);
+          history.replaceState(null, '', categoria === 'todos' ? '#projetos' : `#${categoria}`);
+        }),
+      );
+
+      // Link direto para uma categoria (ex.: /#open-source vindo da ficha do projeto)
+      function porHash() {
+        const alvo = location.hash.slice(1);
+        if (alvo === 'projetos') {
+          aplicar('todos');
+        } else if (alvo && opcoes.some((o) => o.dataset.categoria === alvo)) {
+          aplicar(alvo);
+          secao?.scrollIntoView();
+        }
+      }
+      porHash();
+      window.addEventListener('hashchange', porHash);
+    </script>
   </body>
 </html>
