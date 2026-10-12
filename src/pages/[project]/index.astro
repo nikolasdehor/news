@@ -35,6 +35,13 @@ const categoria = ficha && CATEGORIAS.find((c) => c.id === ficha.categoria)?.nom
 
 const totalEdicoes = posts.length;
 
+// Vizinhos da mesma categoria, para quem chega numa ficha sem publicações
+const vizinhos = ficha
+  ? PROJETOS.filter((p) => p.categoria === ficha.categoria && p.slug !== ficha.slug)
+      .sort((a, b) => Number(b.destaque) - Number(a.destaque))
+      .slice(0, 3)
+  : [];
+
 // Inscrição por email só existe para projetos com audience no Resend
 const projetosSubscribe = [
   { slug: 'mcp-fiscal-brasil', label: 'MCP Fiscal Brasil' },
@@ -57,94 +64,138 @@ const temNewsletter = projetosSubscribe.some((p) => p.slug === project);
   <body>
     <Nav />
 
-    <!-- Cabecalho do projeto -->
-    <section class="project-hero" aria-labelledby="project-title">
-      <div class="project-hero__inner">
-        <a href="/" class="back-link">&larr; Projetos</a>
-
-        <h1 class="project-hero__title" id="project-title">{meta.nome}</h1>
-        <p class="project-hero__desc">{meta.desc}</p>
-
-        {(ficha || meta.tags.length > 0) && (
-          <div class="project-hero__badges">
-            {ficha && <span class={`badge${ficha.status === 'ativo' ? ' badge--accent' : ''}`}>{ficha.status}</span>}
-            {categoria && <span class="badge">{categoria}</span>}
-            {ficha?.visibilidade === 'privado' && <span class="badge">privado</span>}
-            {meta.tags.map((tag) => (
-              <span class="badge">{tag}</span>
-            ))}
-          </div>
-        )}
-
-        <div class="project-hero__links">
-          {links.map((l) => (
-            <a
-              href={l.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="link-external"
-              aria-label={`${l.rotulo} de ${meta.nome} (abre em nova aba)`}
-            >
-              {l.rotulo}
-            </a>
-          ))}
-          <a
-            href={`/${project}/rss.xml`}
-            class="link-external"
-            aria-label={`Feed RSS do projeto ${meta.nome}`}
-          >
-            RSS
-          </a>
-        </div>
-      </div>
-    </section>
-
     <main>
-      <section class="section" aria-labelledby="edicoes-titulo">
-        <div class="container">
-          <h2 class="section-label" id="edicoes-titulo">
-            {totalEdicoes} {totalEdicoes === 1 ? 'edição publicada' : 'edições publicadas'}
-          </h2>
-          {totalEdicoes === 0 && (
-            <p class="empty-state">
-              {ficha?.visibilidade === 'privado'
-                ? 'Ainda não há publicações sobre este projeto. Por ser privado, ele aparece só em alto nível no diário da semana.'
-                : 'Ainda não há publicações sobre este projeto. Novas versões e mudanças relevantes entram aqui e no diário da semana.'}
-              {project !== SEMANA.slug && <> <a href={`/${SEMANA.slug}/`}>Ver o diário da semana &rarr;</a></>}
-            </p>
-          )}
-          <div class="editions-list">
-            {posts.map((post, idx) => {
-              const [, ...restParts] = post.id.split('/');
-              const slug = restParts.join('/');
-              const numEdition = String(totalEdicoes - idx).padStart(2, '0');
-              return (
-                <article class="edition-row">
-                  <p class="edition-number">EDIÇÃO {numEdition}</p>
-                  <h3>
-                    <a href={`/${project}/${slug}/`} class="edition-row__title">
-                      {post.data.title}
-                    </a>
-                  </h3>
-                  <p class="edition-row__excerpt">{post.data.description}</p>
-                  <div class="edition-row__meta">
-                    <time datetime={post.data.pubDate.toISOString()}>
-                      {post.data.pubDate.toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric',
-                        timeZone: 'America/Sao_Paulo',
-                      })}
-                    </time>
-                    <span aria-hidden="true">&middot;</span>
-                    <a href={`/${project}/${slug}/`}>Ler &rarr;</a>
+      <!-- Cabecalho do projeto: título e descrição à esquerda, ficha técnica à direita -->
+      <section class="ficha" aria-labelledby="project-title">
+        <div class="wide">
+          <a href="/#projetos" class="back-link">&larr; Todos os projetos</a>
+          <div class="ficha__grid">
+            <div class="ficha__texto">
+              <h1 class="ficha__titulo" id="project-title">{meta.nome}</h1>
+              <p class="ficha__desc">{meta.desc}</p>
+              <div class="ficha__acoes">
+                {links.map((l, i) => (
+                  <a
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class={`botao${i === 0 ? ' botao--primario' : ''}`}
+                    aria-label={`${l.rotulo} de ${meta.nome} (abre em nova aba)`}
+                  >
+                    {l.rotulo} <span aria-hidden="true">&#8599;</span>
+                  </a>
+                ))}
+                <a href={`/${project}/rss.xml`} class="botao" aria-label={`Feed RSS do projeto ${meta.nome}`}>RSS</a>
+              </div>
+            </div>
+
+            {(ficha || meta.tags.length > 0) && (
+              <dl class="ficha__dados">
+                {ficha && (
+                  <div>
+                    <dt>Status</dt>
+                    <dd><span class={`estado estado--${ficha.status === 'ativo' ? 'ativo' : 'pausado'}`}>{ficha.status}</span></dd>
                   </div>
-                </article>
-              );
-            })}
+                )}
+                {categoria && (
+                  <div>
+                    <dt>Categoria</dt>
+                    <dd><a href={`/#${ficha?.categoria}`}>{categoria}</a></dd>
+                  </div>
+                )}
+                {ficha && (
+                  <div>
+                    <dt>Código</dt>
+                    <dd>{ficha.visibilidade === 'privado' ? 'privado' : 'público'}</dd>
+                  </div>
+                )}
+                {meta.tags.length > 0 && (
+                  <div>
+                    <dt>Stack</dt>
+                    <dd>
+                      <ul class="stack" role="list">
+                        {meta.tags.map((tag) => <li>{tag}</li>)}
+                      </ul>
+                    </dd>
+                  </div>
+                )}
+                <div>
+                  <dt>Edições</dt>
+                  <dd class="ficha__num">{totalEdicoes}</dd>
+                </div>
+              </dl>
+            )}
           </div>
         </div>
       </section>
+
+      <section class="bloco" aria-labelledby="edicoes-titulo">
+        <div class="wide">
+          <h2 class="bloco__titulo" id="edicoes-titulo">
+            {totalEdicoes === 0 ? 'Publicações' : totalEdicoes === 1 ? '1 edição publicada' : `${totalEdicoes} edições publicadas`}
+          </h2>
+          {totalEdicoes === 0 && (
+            <p class="empty-state">
+              {project === SEMANA.slug
+                ? 'Ainda não há resumos semanais publicados.'
+                : ficha?.visibilidade === 'privado'
+                  ? 'Ainda não há publicações sobre este projeto. Por ser privado, ele aparece só em alto nível no diário da semana.'
+                  : 'Ainda não há publicações sobre este projeto. Novas versões e mudanças relevantes entram aqui e no diário da semana.'}
+              {project !== SEMANA.slug
+                ? <> <a href={`/${SEMANA.slug}/`}>Ver o diário da semana &rarr;</a></>
+                : <> <a href="/#projetos">Ver todos os projetos &rarr;</a></>}
+            </p>
+          )}
+          {totalEdicoes > 0 && (
+            <ol class="edicoes" role="list">
+              {posts.map((post, idx) => {
+                const [, ...restParts] = post.id.split('/');
+                const slug = restParts.join('/');
+                const numEdition = String(totalEdicoes - idx).padStart(2, '0');
+                return (
+                  <li class="edicao">
+                    <span class="edicao__num" aria-hidden="true">{numEdition}</span>
+                    <div class="edicao__corpo">
+                      <h3>
+                        <a href={`/${project}/${slug}/`} class="edicao__titulo esticado">{post.data.title}</a>
+                      </h3>
+                      <p class="edicao__resumo">{post.data.description}</p>
+                      <p class="edicao__meta">
+                        <time datetime={post.data.pubDate.toISOString()}>
+                          {post.data.pubDate.toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            timeZone: 'America/Sao_Paulo',
+                          })}
+                        </time>
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
+      </section>
+
+      {vizinhos.length > 0 && (
+        <section class="bloco" aria-labelledby="vizinhos-titulo">
+          <div class="wide">
+            <h2 class="bloco__titulo" id="vizinhos-titulo">Mais em {categoria}</h2>
+            <ul class="grade" role="list">
+              {vizinhos.map((v) => (
+                <li>
+                  <article class="item">
+                    <h3 class="item__nome"><a href={`/${v.slug}/`} class="esticado">{v.nome}</a></h3>
+                    <p class="item__desc">{v.descricao}</p>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
     </main>
 
     <!-- Inscricao: projeto atual pre-marcado (só projetos com newsletter) -->

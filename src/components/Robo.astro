@@ -1,0 +1,99 @@
+---
+/**
+ * Robozinho pixel art (11x9), assinatura visual que leva ao dehor.dev.
+ * Desenho portado de ~/Projects/portfolio (Robot.tsx, modos idle e greet)
+ * para SVG estático; o teal original vira o acento verde do site.
+ * Animação só em CSS (piscar + antena), desligada em prefers-reduced-motion.
+ */
+---
+
+<a
+  href="https://dehor.dev"
+  class="robo"
+  target="_blank"
+  rel="noopener"
+  aria-label="dehor.dev, site pessoal de Nikolas de Hor (abre em nova aba)"
+  title="dehor.dev"
+>
+  <svg viewBox="0 0 11 9" width="11" height="9" shape-rendering="crispEdges" aria-hidden="true" focusable="false">
+    <g class="robo__antena"><rect x="5" y="0" width="1" height="1" /></g>
+    <g class="robo__corpo">
+      <rect x="5" y="1" width="1" height="1" /><rect x="2" y="2" width="7" height="1" /><rect x="1" y="3" width="9" height="1" /><rect x="1" y="4" width="9" height="1" /><rect x="1" y="5" width="9" height="1" /><rect x="1" y="6" width="9" height="1" /><rect x="2" y="7" width="7" height="1" /><rect x="2" y="8" width="2" height="1" /><rect x="7" y="8" width="2" height="1" />
+    </g>
+    <g class="robo__olhos robo__olhos--parado">
+      <rect x="3" y="3" width="1" height="1" /><rect x="7" y="3" width="1" height="1" /><rect x="3" y="4" width="1" height="1" /><rect x="7" y="4" width="1" height="1" />
+    </g>
+    <g class="robo__olhos robo__olhos--oi">
+      <rect x="2" y="3" width="1" height="1" /><rect x="8" y="3" width="1" height="1" /><rect x="3" y="4" width="1" height="1" /><rect x="7" y="4" width="1" height="1" />
+    </g>
+    <g class="robo__boca robo__boca--parado"><rect x="4" y="6" width="3" height="1" /></g>
+    <g class="robo__boca robo__boca--oi"><rect x="3" y="6" width="5" height="1" /></g>
+  </svg>
+</a>
+
+<style>
+.robo {
+  --robo-px: 6px;
+  --robo-olho: #0E110F;
+  display: inline-block;
+  vertical-align: baseline;
+  margin-left: 0.18em;
+  line-height: 0;
+  color: var(--color-accent);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.robo svg {
+  width: calc(11 * var(--robo-px));
+  height: calc(9 * var(--robo-px));
+}
+
+.robo__corpo { fill: currentColor; }
+.robo__antena { fill: var(--color-accent-hover); }
+.robo__olhos,
+.robo__boca { fill: var(--robo-olho); }
+.robo__olhos--oi,
+.robo__boca--oi { display: none; }
+
+/* Hover/foco: a expressão de "oi" do mascote original */
+.robo:hover .robo__olhos--parado,
+.robo:hover .robo__boca--parado,
+.robo:focus-visible .robo__olhos--parado,
+.robo:focus-visible .robo__boca--parado { display: none; }
+
+.robo:hover .robo__olhos--oi,
+.robo:hover .robo__boca--oi,
+.robo:focus-visible .robo__olhos--oi,
+.robo:focus-visible .robo__boca--oi { display: inline; }
+
+.robo:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Piscar a cada ~5s e antena pulsando devagar: em steps, como o original */
+  .robo__olhos--parado {
+    animation: robo-pisca 5.2s steps(1) infinite;
+  }
+
+  .robo__antena {
+    animation: robo-antena 2.4s steps(1) infinite;
+  }
+
+  @keyframes robo-pisca {
+    0%, 94%, 100% { opacity: 1; }
+    95%, 97% { opacity: 0; }
+  }
+
+  @keyframes robo-antena {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+}
+
+  @media (max-width: 640px) {
+    .robo {
+      --robo-px: 4px;
+    }
+  }
+</style>
