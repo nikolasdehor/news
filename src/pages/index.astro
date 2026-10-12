@@ -288,7 +288,9 @@ const projetosSubscribe = [
       // Link direto para uma categoria (ex.: /#open-source vindo da ficha do projeto)
       function porHash() {
         const alvo = location.hash.slice(1);
-        if (alvo && alvo !== 'projetos' && opcoes.some((o) => o.dataset.categoria === alvo)) {
+        if (alvo === 'projetos') {
+          aplicar('todos');
+        } else if (alvo && opcoes.some((o) => o.dataset.categoria === alvo)) {
           aplicar(alvo);
           secao?.scrollIntoView();
         }

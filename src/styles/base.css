@@ -520,3 +520,13 @@ main {
     display: none;
   }
 }
+
+@media (max-width: 380px) {
+  .header-links {
+    gap: var(--space-3);
+  }
+
+  .wordmark {
+    font-size: var(--text-xs);
+  }
+}

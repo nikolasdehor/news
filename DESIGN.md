@@ -332,5 +332,5 @@ CSS puro, sem GSAP: a página não tem cena de rolagem que justifique a bibliote
 
 ## Observações (não normativas)
 
-- Os títulos dos resumos automáticos (`resumo-2026-09-30.md`) trazem travessão gerado pelo script de sincronização; é conteúdo, não interface, e não foi alterado.
+- O script de sincronização e os resumos antigos usam hífen ou vírgula no lugar de travessão.
 - Tokens `--shadow-sm`/`--shadow-md` e `--text-4xl` seguem órfãos.
