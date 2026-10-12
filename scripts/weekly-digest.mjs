@@ -312,11 +312,11 @@ export async function main({ dry = false, now = new Date() } = {}) {
   const content = postFile(week, periodo, body, now);
 
   const forbidden = projetos.filter(p => p.privado).flatMap(p => p.repos.flatMap(r => {
-    // Nome curto só conta se parece identificador de repo e não é o nome/slug público.
+    // Nome curto conta sempre, exceto se é o próprio nome/slug público ou palavra genérica curta (ex.: "site").
     const curto = r.split('/').pop();
     const norm = t => t.toLowerCase().replace(/[^a-z0-9]/g, '');
     const publico = [p.slug, p.nome].filter(Boolean).map(norm);
-    return /[-_]/.test(curto) && !publico.includes(norm(curto)) ? [r, curto] : [r];
+    return curto.length >= 5 && !publico.includes(norm(curto)) ? [r, curto] : [r];
   }));
   const review = parseReview(claude(reviewerPrompt(body, ativos.filter(p => p.privado).map(p => p.nome))));
   const problemas = [...review.problemas, ...scanSecrets(body, forbidden)];
