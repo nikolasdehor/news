@@ -15,7 +15,7 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { tmpdir } from 'node:os';
+import { tmpdir, homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
@@ -234,7 +234,7 @@ function mergePr(pr, cwd) {
 }
 
 /** Publica num worktree temporário a partir de origin/main (não toca no checkout local). */
-function publish({ rel, content, branch, title, ok, problemas }) {
+function publish({ rel, content, branch, title }) {
   git(ROOT, ['fetch', 'origin', 'main']);
   if (spawnSync('git', ['cat-file', '-e', `origin/main:${rel}`], { cwd: ROOT }).status === 0) {
     console.log(`[digest] ${rel} já existe na main; nada a fazer.`);
@@ -249,14 +249,11 @@ function publish({ rel, content, branch, title, ok, problemas }) {
     git(dir, ['add', rel]);
     git(dir, ['commit', '-m', `docs: ${title.toLowerCase()}`]);
     git(dir, ['push', '-u', '--force', 'origin', branch]);
-    const body = ok
-      ? 'Diário da semana gerado pelo scripts/weekly-digest.mjs. Revisão de privacidade (LLM + varredura de padrões) aprovada.'
-      : `Diário da semana gerado pelo scripts/weekly-digest.mjs. **Revisão de privacidade reprovou**, não fazer merge sem corrigir:\n\n${problemas.map(p => `- ${p}`).join('\n')}`;
+    const body = 'Diário da semana gerado pelo scripts/weekly-digest.mjs. Revisão de privacidade (LLM + varredura de padrões) aprovada.';
     const created = spawnSync('gh', ['pr', 'create', '--base', 'main', '--head', branch, '--title', title, '--body', body], { cwd: dir, encoding: 'utf8' });
     if (created.status !== 0) throw new Error(`gh pr create falhou: ${created.stderr.trim()}`);
     const pr = created.stdout.trim();
     console.log(`[digest] PR: ${pr}`);
-    if (!ok) return 3;
     mergePr(pr, dir);
     console.log('[digest] merge feito/agendado.');
     return 0;
@@ -314,7 +311,13 @@ export async function main({ dry = false, now = new Date() } = {}) {
   const week = isoWeek(new Date(now - DAY)); // segunda cobre a semana ISO que terminou no domingo
   const content = postFile(week, periodo, body, now);
 
-  const forbidden = projetos.filter(p => p.privado).flatMap(p => p.repos);
+  const forbidden = projetos.filter(p => p.privado).flatMap(p => p.repos.flatMap(r => {
+    // Nome curto só conta se parece identificador de repo e não é o nome/slug público.
+    const curto = r.split('/').pop();
+    const norm = t => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const publico = [p.slug, p.nome].filter(Boolean).map(norm);
+    return /[-_]/.test(curto) && !publico.includes(norm(curto)) ? [r, curto] : [r];
+  }));
   const review = parseReview(claude(reviewerPrompt(body, ativos.filter(p => p.privado).map(p => p.nome))));
   const problemas = [...review.problemas, ...scanSecrets(body, forbidden)];
   const ok = review.ok && problemas.length === 0;
@@ -327,10 +330,17 @@ export async function main({ dry = false, now = new Date() } = {}) {
     problemas.forEach(p => console.log(`- ${p}`));
     return 0;
   }
+  if (!ok) {
+    // Reprovado nunca sai do Mac: o repo é público, branch ou PR já vazaria o texto.
+    const local = join(homedir(), 'Library/Logs', `news-semana-${week.year}-${week.week}-REPROVADO.md`);
+    writeFileSync(local, content);
+    problemas.forEach(p => console.error(`[digest] problema: ${p}`));
+    console.error(`[digest] revisão reprovou; rascunho salvo só local em ${local}. Nada publicado.`);
+    spawnSync('terminal-notifier', ['-title', 'news.dehor', '-message', 'Diário da semana reprovado na revisão de privacidade; veja o log.'], { stdio: 'ignore' });
+    return 3;
+  }
   const title = `Diário da semana ${week.week} de ${week.year}`;
-  const code = publish({ rel, content, branch: `auto/semana-${week.week}`, title, ok, problemas });
-  problemas.forEach(p => console.error(`[digest] problema: ${p}`));
-  return code;
+  return publish({ rel, content, branch: `auto/semana-${week.week}`, title });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
