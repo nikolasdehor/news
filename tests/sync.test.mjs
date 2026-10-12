@@ -62,3 +62,23 @@ test('weekly cron may include a new correction less than seven days after last e
   const apiRecent=async path=>path.includes('/files?')?[{filename:'src/demo.py'}]:path.includes('/pulls?')?[recent]:path.includes('/releases?')?[]:{private:false};
   assert.equal(await run({root,api:apiRecent,projects:[project],now:new Date('2026-06-24T12:00:00Z')}),2);
 });
+test('new catalog project without posts uses baseline since and creates its folder', async()=>{
+  const root=mkdtempSync(join(tmpdir(),'news-test-'));mkdirSync(join(root,'.github'));
+  const fresh={...project,slug:'novo'};
+  writeFileSync(join(root,'.github/synced-releases.json'),JSON.stringify({covered:{},since:{novo:'2026-06-30T00:00:00Z'}}));
+  assert.equal(await run({root,api,projects:[fresh]}),2);
+  assert.equal(readdirSync(join(root,'src/content/posts/novo')).length,1);
+  const other=mkdtempSync(join(tmpdir(),'news-test-'));mkdirSync(join(other,'.github'));
+  writeFileSync(join(other,'.github/synced-releases.json'),JSON.stringify({covered:{},since:{novo:'2026-07-02T00:00:00Z'}}));
+  assert.equal(await run({root:other,api,projects:[fresh]}),0);
+  const missing=mkdtempSync(join(tmpdir(),'news-test-'));mkdirSync(join(missing,'.github'));
+  writeFileSync(join(missing,'.github/synced-releases.json'),'{"covered":{}}');
+  await assert.rejects(run({root:missing,api,projects:[fresh]}));
+});
+test('catalog feeds sync only with public repos', async()=>{
+  const {PROJECTS,CATALOGO}=await import('../scripts/news-projects.mjs');
+  assert.ok(PROJECTS.length>2);
+  const privados=new Set(CATALOGO.filter(p=>p.visibilidade==='privado').map(p=>p.slug));
+  assert.ok(PROJECTS.every(p=>p.repo && !privados.has(p.slug)));
+  assert.ok(CATALOGO.filter(p=>p.visibilidade==='privado').every(p=>!p.repo));
+});

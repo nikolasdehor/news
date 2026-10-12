@@ -28,3 +28,7 @@ pnpm-debug.log*
 
 .sync/
 evidence/
+
+# Digest semanal (local, mapa de repos privados)
+.digest-sources.json
+.screens/

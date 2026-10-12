@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import Head from '../../components/Head.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import { nomeDoProjeto, porSlug } from '../../lib/projetos';
 import '../../styles/global.css';
 
 export async function getStaticPaths() {
@@ -26,16 +27,9 @@ const { Content } = await render(post);
 const canonicalURL = new URL(`/${project}/${slug}/`, Astro.site);
 
 // Nomes de display por projeto
-const nomesProjeto: Record<string, string> = {
-  'mcp-fiscal-brasil': 'MCP Fiscal Brasil',
-  'mcp-juridico-brasil': 'MCP Jurídico Brasil',
-};
-const nomeProjeto = nomesProjeto[project] ?? project;
-const reposProjeto: Record<string, string> = {
-  'mcp-fiscal-brasil': 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
-  'mcp-juridico-brasil': 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
-};
-const repoProjeto = reposProjeto[project] ?? 'https://github.com/nikolasdehor';
+const nomeProjeto = nomeDoProjeto(project);
+const repoDoCatalogo = porSlug(project)?.repo;
+const repoProjeto = repoDoCatalogo ? `https://github.com/${repoDoCatalogo}` : 'https://github.com/nikolasdehor';
 
 // Numero da edicao a partir do slug (ex: "edicao-1" -> "01")
 const matchNum = slug.match(/^edicao-(\d+)$/);

@@ -4,13 +4,14 @@ import Head from '../../components/Head.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
 import SubscribeForm from '../../components/SubscribeForm.astro';
+import { PROJETOS, SEMANA, CATEGORIAS, porSlug, linksDoProjeto } from '../../lib/projetos';
 import '../../styles/global.css';
 
 export async function getStaticPaths() {
   const todos = await getCollection('posts', ({ data }) => !data.draft);
-  const projetos = [...new Set(todos.map((p) => p.data.project))];
+  const slugs = new Set([...PROJETOS.map((p) => p.slug), SEMANA.slug, ...todos.map((p) => p.data.project)]);
 
-  return projetos.map((project) => ({
+  return [...slugs].map((project) => ({
     params: { project },
     props: {
       posts: todos
@@ -23,41 +24,23 @@ export async function getStaticPaths() {
 const { project } = Astro.params;
 const { posts } = Astro.props;
 
-// Metadados por projeto
-const metaProjetos: Record<string, {
-  nome: string;
-  desc: string;
-  github: string;
-  tags: string[];
-}> = {
-  'mcp-fiscal-brasil': {
-    nome: 'MCP Fiscal Brasil',
-    desc: 'Servidor MCP em Python para consulta de dados fiscais e tributários brasileiros.',
-    github: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
-    tags: ['Python', 'MCP', 'Open Source'],
-  },
-  'mcp-juridico-brasil': {
-    nome: 'MCP Jurídico Brasil',
-    desc: 'Servidor MCP em Python para consulta processual via DataJud CNJ - 91 tribunais, cálculo de prazos e monitoramento de processos.',
-    github: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
-    tags: ['Python', 'MCP', 'Legaltech', 'Open Source'],
-  },
-};
-
-const meta = metaProjetos[project] ?? {
-  nome: project,
-  desc: `Diário de bordo do projeto ${project}.`,
-  github: '',
-  tags: [],
-};
+const ficha = porSlug(project);
+const meta = ficha
+  ? { nome: ficha.nome, desc: ficha.descricao, tags: ficha.stack }
+  : project === SEMANA.slug
+    ? { nome: SEMANA.nome, desc: SEMANA.descricao, tags: [] as string[] }
+    : { nome: project, desc: `Diário de bordo do projeto ${project}.`, tags: [] as string[] };
+const links = ficha ? linksDoProjeto(ficha) : [];
+const categoria = ficha && CATEGORIAS.find((c) => c.id === ficha.categoria)?.nome;
 
 const totalEdicoes = posts.length;
 
-// Projetos disponiveis para inscricao (todos os conhecidos)
+// Inscrição por email só existe para projetos com audience no Resend
 const projetosSubscribe = [
   { slug: 'mcp-fiscal-brasil', label: 'MCP Fiscal Brasil' },
   { slug: 'mcp-juridico-brasil', label: 'MCP Jurídico Brasil' },
 ];
+const temNewsletter = projetosSubscribe.some((p) => p.slug === project);
 ---
 
 <html lang="pt-BR">
@@ -82,26 +65,29 @@ const projetosSubscribe = [
         <h1 class="project-hero__title" id="project-title">{meta.nome}</h1>
         <p class="project-hero__desc">{meta.desc}</p>
 
-        {meta.tags.length > 0 && (
+        {(ficha || meta.tags.length > 0) && (
           <div class="project-hero__badges">
+            {ficha && <span class={`badge${ficha.status === 'ativo' ? ' badge--accent' : ''}`}>{ficha.status}</span>}
+            {categoria && <span class="badge">{categoria}</span>}
+            {ficha?.visibilidade === 'privado' && <span class="badge">privado</span>}
             {meta.tags.map((tag) => (
-              <span class="badge badge--accent">{tag}</span>
+              <span class="badge">{tag}</span>
             ))}
           </div>
         )}
 
         <div class="project-hero__links">
-          {meta.github && (
+          {links.map((l) => (
             <a
-              href={meta.github}
+              href={l.url}
               target="_blank"
               rel="noopener noreferrer"
               class="link-external"
-              aria-label={`Repositorio GitHub de ${meta.nome} (abre em nova aba)`}
+              aria-label={`${l.rotulo} de ${meta.nome} (abre em nova aba)`}
             >
-              GitHub
+              {l.rotulo}
             </a>
-          )}
+          ))}
           <a
             href={`/${project}/rss.xml`}
             class="link-external"
@@ -119,6 +105,14 @@ const projetosSubscribe = [
           <h2 class="section-label" id="edicoes-titulo">
             {totalEdicoes} {totalEdicoes === 1 ? 'edição publicada' : 'edições publicadas'}
           </h2>
+          {totalEdicoes === 0 && (
+            <p class="empty-state">
+              {ficha?.visibilidade === 'privado'
+                ? 'Ainda não há publicações sobre este projeto. Por ser privado, ele aparece só em alto nível no diário da semana.'
+                : 'Ainda não há publicações sobre este projeto. Novas versões e mudanças relevantes entram aqui e no diário da semana.'}
+              {project !== SEMANA.slug && <> <a href={`/${SEMANA.slug}/`}>Ver o diário da semana &rarr;</a></>}
+            </p>
+          )}
           <div class="editions-list">
             {posts.map((post, idx) => {
               const [, ...restParts] = post.id.split('/');
@@ -153,12 +147,14 @@ const projetosSubscribe = [
       </section>
     </main>
 
-    <!-- Inscricao: projeto atual pre-marcado -->
-    <SubscribeForm
-      projects={projetosSubscribe}
-      preChecked={[project]}
-      heading={`Acompanhe o ${meta.nome}`}
-    />
+    <!-- Inscricao: projeto atual pre-marcado (só projetos com newsletter) -->
+    {temNewsletter && (
+      <SubscribeForm
+        projects={projetosSubscribe}
+        preChecked={[project]}
+        heading={`Acompanhe o ${meta.nome}`}
+      />
+    )}
 
     <Footer />
   </body>

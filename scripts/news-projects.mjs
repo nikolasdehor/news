@@ -1,35 +1,12 @@
-export const PROJECTS = [
-  {
-    /** Identificador do repositorio no GitHub (owner/repo) */
-    enabled: true,
-    repo: 'DeHor-Labs/mcp-fiscal-brasil',
-    /** Slug usado no diretorio de posts e no campo `project` do frontmatter */
-    slug: 'mcp-fiscal-brasil',
-    /** Nome de exibicao com capitalizacao correta (siglas, acentos etc.) */
-    displayName: 'MCP Fiscal Brasil',
-    /** Imagem OG padrao do projeto (relativa a /public) */
-    ogImage: '/og/mcp-fiscal-brasil.png',
-    /** Tags base que todo post deste projeto recebe */
-    baseTags: ['mcp', 'python', 'fiscal', 'brasil', 'open-source'],
-    /** Links de referencia do projeto */
-    links: {
-      repo: 'https://github.com/DeHor-Labs/mcp-fiscal-brasil',
-      docs: 'https://dehor-labs.github.io/mcp-fiscal-brasil/',
-      pypi: 'https://pypi.org/project/mcp-fiscal-brasil/',
-    },
-  },
-  {
-    enabled: true,
-    repo: 'DeHor-Labs/mcp-juridico-brasil',
-    slug: 'mcp-juridico-brasil',
-    displayName: 'MCP Jurídico Brasil',
-    ogImage: '/og/mcp-juridico-brasil.png',
-    baseTags: ['mcp', 'python', 'juridico', 'brasil', 'open-source'],
-    links: {
-      repo: 'https://github.com/DeHor-Labs/mcp-juridico-brasil',
-      docs: 'https://dehor-labs.github.io/mcp-juridico-brasil/',
-      pypi: 'https://pypi.org/project/mcp-juridico-brasil/',
-    },
-  },
-];
-export const OPTIONAL_PROJECTS = ["DeHor-Labs/mcp-agro-brasil", "DeHor-Labs/transcreve-ai", "nikolasdehor/verboo-bridge"]; // Disabled; require public verification and editorial opt-in.
+import { readFileSync } from 'node:fs';
+
+/**
+ * Projetos monitorados pelo sync-releases: itens públicos do catálogo
+ * (src/data/projetos.json) que têm repositório. Privados nunca entram aqui;
+ * eles só aparecem em alto nível no digest semanal gerado no Mac.
+ */
+export const CATALOGO = JSON.parse(readFileSync(new URL('../src/data/projetos.json', import.meta.url), 'utf8'));
+
+export const PROJECTS = CATALOGO
+  .filter(p => p.visibilidade === 'publico' && p.repo)
+  .map(p => ({ enabled: true, repo: p.repo, slug: p.slug, displayName: p.nome }));

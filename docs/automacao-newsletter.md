@@ -8,8 +8,10 @@ na main. Merge de post com draft:false publica e pode enviar aos inscritos: essa
 
 ## Coleta e seleção
 
-`scripts/news-projects.mjs` habilita apenas Fiscal e Jurídico. As opções Agro,
-Transcreve e Verboo estão desabilitadas e não mudam assinaturas/audiências.
+`scripts/news-projects.mjs` lê o catálogo `src/data/projetos.json` e monitora só
+os itens públicos com repositório. Projetos novos sem edição publicada usam a
+baseline `since` de `.github/synced-releases.json` (e as tags já existentes em
+`covered`), para não gerar flood histórico. Isso não muda assinaturas/audiências.
 Repositórios devem retornar private:false antes de qualquer coleta. Não usamos
 commits, repositórios privados, dados de clientes, nem serviços pagos.
 
@@ -72,3 +74,17 @@ de correções resulta em no-op de envio; nenhum dispatch é necessário.
 index.md e llms-full.txt passam a ser gerados dos posts publicados a cada build,
 sem rascunhos, cidade antiga ou snapshots de features apresentados como estado
 atual. llms.txt permanece experimental e aponta para fontes e páginas públicas.
+
+## Diário da semana (todos os projetos)
+
+`scripts/weekly-digest.mjs` roda no Mac (launchd `br.com.dehor.news-weekly`, segunda
+09:00, log em `~/Library/Logs/news-weekly.log`), não no Actions, porque usa o `gh`
+local para ler repositórios privados e o `claude -p` autenticado por OAuth (o script
+remove `ANTHROPIC_API_KEY` do ambiente e roda em `--safe-mode`, sem ferramentas).
+Os repositórios privados ficam fora do catálogo público, em `.digest-sources.json`
+(gitignored). Coleta commits da branch padrão e PRs mergeadas dos últimos 7 dias;
+semana sem atividade não gera post. Um segundo `claude -p` revisa privacidade e uma
+varredura determinística procura chaves, JWT, IPs, e-mails, CPF, telefones e nomes
+de repositórios privados. Aprovado: PR `auto/semana-WW` com merge. Reprovado: PR
+aberta sem merge, com os problemas no corpo. `--dry-run` só imprime o markdown.
+O projeto `semana` não tem audience no Resend: o envio de newsletter o ignora.

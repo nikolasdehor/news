@@ -1,0 +1,42 @@
+---
+/**
+ * Item do portfólio (home): linha estilo Resend com nome, descrição,
+ * badges de status/stack e links públicos. O nome é um link esticado
+ * que cobre a linha toda; os links externos ficam acima dele.
+ */
+import { linksDoProjeto, type Projeto } from '../lib/projetos';
+
+interface Props {
+  projeto: Projeto;
+  posts: number;
+}
+
+const { projeto: p, posts } = Astro.props;
+const links = linksDoProjeto(p);
+---
+
+<article class="project-item project-item--catalogo">
+  <div class="project-item__body">
+    <h4 class="project-item__name">
+      <a href={`/${p.slug}/`} class="project-item__link">{p.nome}</a>
+    </h4>
+    <p class="project-item__desc">{p.descricao}</p>
+    <div class="project-item__badges">
+      <span class={`badge${p.status === 'ativo' ? ' badge--accent' : ''}`}>{p.status}</span>
+      {p.visibilidade === 'privado' && <span class="badge">privado</span>}
+      {p.stack.map((s) => <span class="badge">{s}</span>)}
+    </div>
+    {links.length > 0 && (
+      <div class="project-item__links">
+        {links.map((l) => (
+          <a href={l.url} target="_blank" rel="noopener noreferrer" class="link-external">{l.rotulo}</a>
+        ))}
+      </div>
+    )}
+  </div>
+  {posts > 0 && (
+    <span class="project-item__arrow" aria-hidden="true">
+      {posts} {posts === 1 ? 'edição' : 'edições'} &rarr;
+    </span>
+  )}
+</article>

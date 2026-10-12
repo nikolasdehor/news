@@ -54,10 +54,11 @@ export async function pages(path, api=github) {
   for(let page=1;page<=100;page++) { const batch=await api(`${path}${path.includes('?')?'&':'?'}per_page=100&page=${page}`); if(!Array.isArray(batch)) throw new Error('Invalid API list'); all.push(...batch); if(batch.length<100)return all; }
   throw new Error('Pagination limit; refusing incomplete collection');
 }
-export function select({project, releases, pulls, posts, legacy, cutoff}) {
+export function select({project, releases, pulls, posts, legacy, cutoff, baselineSince}) {
   const published=posts.filter(p=>p.fm.draft==='false');
   const windows=published.map(p=>p.fm.sourceUntil || p.fm.pubDate).filter(Boolean).sort((a,b)=>Date.parse(a)-Date.parse(b));
-  const since=windows.at(-1);
+  // Projeto novo sem edição publicada usa a baseline de synced-releases.json (evita flood histórico).
+  const since=windows.at(-1) ?? baselineSince;
   if(!since || !Number.isFinite(Date.parse(since))) {
     throw new Error(`Missing published baseline: ${project.slug}`);
   }
@@ -77,9 +78,9 @@ export function render(project, plan) {
 }
 export async function run({root=ROOT, api=github, now=new Date(), dry=false, projects=PROJECTS}={}) {
   const report={attemptAt:now.toISOString(), lastSuccessfulCollection:null, status:'collecting', projects:[], errors:[]};
-  const plans=[]; const legacy=JSON.parse(readFileSync(join(root,'.github/synced-releases.json'))).covered;
+  const plans=[]; const synced=JSON.parse(readFileSync(join(root,'.github/synced-releases.json'))); const legacy=synced.covered; const baselines=synced.since || {};
   const activeProjects = projects.filter(p => p.enabled);
-  const results = await Promise.allSettled(activeProjects.map(project => collectProject({root, api, now, legacy, project})));
+  const results = await Promise.allSettled(activeProjects.map(project => collectProject({root, api, now, legacy, project, baselineSince:baselines[project.slug]})));
   results.forEach((result, index) => {
     if (result.status === 'fulfilled') {
       const item = result.value;
@@ -106,11 +107,11 @@ function writeDrafts(plans, dry) {
     if (!plan.events.length) continue;
     const file = join(dir, `resumo-${plan.cutoff.slice(0,10)}.md`);
     if (dry) { generated++; continue; }
-    if (!existsSync(file)) { writeFileSync(file, render(project, plan)); generated++; }
+    if (!existsSync(file)) { mkdirSync(dir, {recursive:true}); writeFileSync(file, render(project, plan)); generated++; }
   }
   return generated;
 }
-async function collectProject({root, api, now, legacy, project}) {
+async function collectProject({root, api, now, legacy, project, baselineSince}) {
   const repo = await api(`repos/${project.repo}`);
   if (repo.private !== false) throw new Error('Public repository required');
   const [releases, pulls] = await Promise.all([
@@ -118,13 +119,13 @@ async function collectProject({root, api, now, legacy, project}) {
     pages(`repos/${project.repo}/pulls?state=closed&sort=updated&direction=desc`, api),
   ]);
   const dir = join(root, 'src/content/posts', project.slug);
-  const posts = readdirSync(dir).filter(f => f.endsWith('.md')).map(f => {
+  const posts = (existsSync(dir) ? readdirSync(dir) : []).filter(f => f.endsWith('.md')).map(f => {
     const raw = readFileSync(join(dir, f), 'utf8');
     return {raw, fm:frontmatter(raw)};
   });
   const since = posts.filter(post => post.fm.draft === 'false')
     .map(post => post.fm.sourceUntil || post.fm.pubDate)
-    .sort((a,b) => Date.parse(a)-Date.parse(b)).at(-1);
+    .sort((a,b) => Date.parse(a)-Date.parse(b)).at(-1) ?? baselineSince;
   // Fetch changed paths only for new candidate PRs. No patches or private commits.
   const candidates = pulls.filter(pr => pr.merged_at && Date.parse(pr.merged_at) > Date.parse(since) &&
     Date.parse(pr.merged_at) <= now.valueOf() && candidate(pr));
@@ -134,7 +135,7 @@ async function collectProject({root, api, now, legacy, project}) {
     const files = await pages(`repos/${project.repo}/pulls/${pr.number}/files`, api);
     return [...collected, {...pr, files:files.map(file => file.filename)}];
   }, Promise.resolve([]));
-  const plan = select({project, releases, pulls:qualifiedPulls, posts, legacy, cutoff:now.toISOString()});
+  const plan = select({project, releases, pulls:qualifiedPulls, posts, legacy, cutoff:now.toISOString(), baselineSince});
   return {project, plan, dir};
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
