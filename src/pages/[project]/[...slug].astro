@@ -29,7 +29,7 @@ const canonicalURL = new URL(`/${project}/${slug}/`, Astro.site);
 // Nomes de display por projeto
 const nomeProjeto = nomeDoProjeto(project);
 const repoDoCatalogo = porSlug(project)?.repo;
-const repoProjeto = repoDoCatalogo ? `https://github.com/${repoDoCatalogo}` : 'https://github.com/nikolasdehor';
+const repoProjeto = repoDoCatalogo ? `https://github.com/${repoDoCatalogo}` : null;
 
 // Numero da edicao a partir do slug (ex: "edicao-1" -> "01")
 const matchNum = slug.match(/^edicao-(\d+)$/);
@@ -104,7 +104,7 @@ const minutos = Math.max(1, Math.round(textoEstimado / palavrasPorMinuto));
             &larr; Voltar para {nomeProjeto}
           </a>
         </nav>
-        <div class="post-footer__note">
+        {repoProjeto && <div class="post-footer__note">
           <p>
             Gostou desta edição? Acompanhe o projeto no GitHub: <a
               href={repoProjeto}
@@ -112,7 +112,7 @@ const minutos = Math.max(1, Math.round(textoEstimado / palavrasPorMinuto));
               rel="noopener noreferrer"
             >{repoProjeto.replace('https://', '')}</a>
           </p>
-        </div>
+        </div>}
       </div>
     </main>
 

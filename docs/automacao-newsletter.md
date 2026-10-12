@@ -81,10 +81,11 @@ atual. llms.txt permanece experimental e aponta para fontes e páginas públicas
 09:00, log em `~/Library/Logs/news-weekly.log`), não no Actions, porque usa o `gh`
 local para ler repositórios privados e o `claude -p` autenticado por OAuth (o script
 remove `ANTHROPIC_API_KEY` do ambiente e roda em `--safe-mode`, sem ferramentas).
-Os repositórios privados ficam fora do catálogo público, em `.digest-sources.json`
+O catálogo público lista os projetos privados só em alto nível, sem URL de
+repositório; os repositórios privados e suas fontes ficam em `.digest-sources.json`
 (gitignored). Coleta commits da branch padrão e PRs mergeadas dos últimos 7 dias;
 semana sem atividade não gera post. Um segundo `claude -p` revisa privacidade e uma
 varredura determinística procura chaves, JWT, IPs, e-mails, CPF, telefones e nomes
-de repositórios privados. Aprovado: PR `auto/semana-WW` com merge. Reprovado: PR
-aberta sem merge, com os problemas no corpo. `--dry-run` só imprime o markdown.
+de repositórios privados. Aprovado: PR `auto/semana-WW` com merge. Reprovado: nada
+sai do Mac (sem branch nem PR); o rascunho fica em `~/Library/Logs` e o log lista os problemas. `--dry-run` só imprime o markdown.
 O projeto `semana` não tem audience no Resend: o envio de newsletter o ignora.
