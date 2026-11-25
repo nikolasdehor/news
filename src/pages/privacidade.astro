@@ -9,7 +9,7 @@ import '../styles/global.css';
   <head>
     <Head
       title="Privacidade"
-      description="Quais dados o news.dehor.com.br coleta de fato: formulário de newsletter, preferência de tema e RSS."
+      description="Quais dados o news.dehor.com.br coleta de fato: formulário de newsletter, preferência de tema, análise de navegação e RSS."
       canonicalURL={new URL('/privacidade', Astro.site)}
     />
     <meta name="generator" content={Astro.generator} />
@@ -48,8 +48,16 @@ import '../styles/global.css';
               O alternador de tema claro/escuro é salvo no armazenamento local do navegador e
               nunca sai do seu dispositivo. Todas as fontes são hospedadas junto com os
               arquivos do próprio site, então ler este site não gera requisição ao Google Fonts
-              nem a nenhum outro serviço de fontes de terceiros. Nenhum script de analytics ou
-              rastreamento roda neste site.
+              nem a nenhum outro serviço de fontes de terceiros.
+            </p>
+            <h2>Análise de navegação (Microsoft Clarity)</h2>
+            <p>
+              Este site usa o Microsoft Clarity para gravar a navegação (cliques, rolagem e
+              movimento do cursor) e gerar mapas de calor, com o objetivo de melhorar o
+              conteúdo e a usabilidade. O Clarity roda sem cookies: o consentimento de
+              armazenamento é negado por padrão e nenhum cookie é gravado no seu navegador.
+              Os campos de formulário, incluindo o e-mail da newsletter, são mascarados e não
+              aparecem nas gravações. Os dados são processados pela Microsoft.
             </p>
             <h2>RSS e conteúdo público</h2>
             <p>
