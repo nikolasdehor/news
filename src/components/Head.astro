@@ -74,3 +74,9 @@ const ogImageURL = ogImage
         title={`RSS - ${project}`}
         href={`/${project}/rss.xml`} />
 )}
+
+<!-- Microsoft Clarity: só carrega no domínio de produção, sem cookies (ver src/lib/clarity.js) -->
+<script>
+  import { initClarity } from '../lib/clarity.js';
+  initClarity(window, document);
+</script>
